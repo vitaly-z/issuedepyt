@@ -66,7 +66,7 @@ export type HostAPI = PluginEndpointAPILayer;
 
 type YTAppInterface = {
   locale: string;
-  entity?: {
+  entity: {
     id: string;
     type: 'user' | 'article' | 'ticket' | 'project' | 'app'
   };
