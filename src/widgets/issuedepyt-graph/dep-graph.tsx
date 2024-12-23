@@ -5,9 +5,11 @@ import { Network } from 'vis-network/standalone/esm/vis-network';
 interface DepGraphProps {
   nodes: { id: number|string, label: string }[];
   edges: { from: number|string, to: number|string, label: string | undefined }[];
+  onClick?: (nodeId: number|string) => void;
+  setSelectedNode: (nodeId: number|string) => void;
 }
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ nodes, edges }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({ nodes, edges, onClick, setSelectedNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,9 +51,22 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ nodes, edges }) => {
       };
 
       // @ts-ignore
-      new Network(containerRef.current, data, options);
+      let network = new Network(containerRef.current, data, options);
+
+      network.on('click', (params) => {
+        console.log('Clicked network:', params);
+        const nodes = params.nodes;
+        if (nodes.length > 0) {
+          setSelectedNode(nodes[0]);
+          if (onClick) {
+            onClick(nodes[0]);
+          }
+        }
+      });
+
+      network;
     }
-  }, [nodes, edges]);
+  }, [nodes, edges, onClick, setSelectedNode]);
 
   return <div ref={containerRef} style={{ height: '500px' }} />;
 };

@@ -23,6 +23,10 @@ const getCustomField = (name: string, fields: Array<{name: string, value: any}>)
 };
 
 async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number): Promise<any> {
+  if (depth == 0) {
+    return [];
+  }
+
   const links = await fetchIssueLinks(host, issueID);
 
   const followLinks = [
@@ -36,22 +40,18 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number)
     );
   });
 
-  console.log(linksToFollow);
-
   const linksFlat = linksToFollow.flatMap((link: any) => 
     link.issues.map((issue: any) => ({
       id: issue.idReadable,
       sourceId: issueID,
       summary: issue.summary,
       state: getCustomField("State", issue.customFields)?.name,
+      assignee: getCustomField("Assignee", issue.customFields)?.name,
       resolved: issue.resolved,
       relation: link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
+      maxDepthReached: depth == 1,
     }))
   );
-
-  if (depth == 0) {
-    return linksFlat;
-  }
 
   const promises = linksFlat.map((link: any) => fetchDepsRecursive(host, link.id, depth - 1));
   const results = await Promise.all(promises);
@@ -83,15 +83,24 @@ export async function fetchDeps(host: HostAPI, issueID: string): Promise<any> {
     );
   });
 
-  const linksFlat = await fetchDepsRecursive(host, issueID, 5);
+  const linksFlat = await fetchDepsRecursive(host, issueID, 10);
 
   const rootNode = {id: issueID, label: `${issueID}`, shape: "ellipse"};
+  const getNodeLabel = (issue: any) => {
+    let lines = [
+      `${issue.id}: ${issue.summary}`,
+      `[${issue.state}]`
+    ];
+    if (issue?.maxDepthReached) {
+      lines.push("<i>Max depth reached!</i>");
+    }
+    return lines.join("\n");
+  };
   const depNodes = linksFlat.map((link: any) => ({
     id: link.id,
-    label: `${link.id}: ${link.summary}\n<code>[${link.state}]</code>`,
+    label: getNodeLabel(link),
     font: {multi: "html"},
     color: getNodeColor(link.resolved, link.state)
-
   }));
   const nodes = [rootNode, ...depNodes];
   const edges = linksFlat.map((link: any) => ({
@@ -109,9 +118,10 @@ export async function fetchDeps(host: HostAPI, issueID: string): Promise<any> {
         scaleFactor: 0.5,
         type: "diamond",
       },
-
     }
   }));
 
-  return {nodes, edges};
+  const issues = Object.fromEntries(linksFlat.map((link: any) => [link.id, link]));
+
+  return {nodes, edges, issues};
 }
