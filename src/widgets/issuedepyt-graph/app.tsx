@@ -11,14 +11,14 @@ import IssueInfoCard from './issue-info-card';
 // Register widget in YouTrack. To learn more, see https://www.jetbrains.com/help/youtrack/devportal-apps/apps-host-api.html
 const host = await YTApp.register();
 
-const issueID = YTApp.entity.id;
+const issue = YTApp.entity;
 
 const AppComponent: React.FunctionComponent = () => {
   const [selectedNode, setSelectedNode] = useState<number|string|null>(null);
   const [issueData, setIssueData] = useState<{[key: string]: IssueInfo}>({});
 
   const refreshData = useCallback(async () => {
-    const issues = await fetchDeps(host, issueID);
+    const issues = await fetchDeps(host, issue);
     setIssueData(issues);
   }, []);
 
@@ -31,7 +31,7 @@ const AppComponent: React.FunctionComponent = () => {
       <ThemeProvider theme={Theme.AUTO}>
         <ButtonToolbar>
           <Button onClick={refreshData} icon={updateIcon}>Refresh</Button>
-          {selectedNode !== null && selectedNode in issueData && (
+          {(selectedNode !== null) && (selectedNode != issue.id) && selectedNode in issueData && (
             <Button primary href={`/issue/${selectedNode}`}>Open {selectedNode}</Button>
           )}
         </ButtonToolbar>

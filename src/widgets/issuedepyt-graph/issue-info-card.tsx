@@ -2,62 +2,65 @@ import React, { useRef } from 'react';
 import type {IssueInfo, IssueLink} from './issue-types';
 import Island, {Header, Content} from '@jetbrains/ring-ui-built/components/island/island';
 import List from '@jetbrains/ring-ui-built/components/list/list';
+import { ListDataItem } from '@jetbrains/ring-ui-built/components/list/consts';
 
 interface IssueInfoCardProps {
   issue: IssueInfo;
 }
 
 const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) => {
-
-  const props = ["state", "assignee"
-  
-  ]
-
-  let listData = [];
-  listData.push({
-    rgItemType: 5,
-    key: listData.length,
-    label: "Properties",
-  });
-  listData.push({
-    rgItemType: 2,
-    key: listData.length,
-    label: "State",
-    details: issue.state,
-  });
-  listData.push({
-    rgItemType: 2,
-    key: listData.length,
-    label: "Assignee",
-    details: issue.assignee,
-  });
-  const links = issue.links;
-  const relations = issue.links
-    .filter(link => link.direction === "OUTWARD")
-    .map(link => link.sourceToTarget)
-    .filter((item, i, ar) => ar.indexOf(item) === i)
-    .sort();
-  for (let relation of relations) {
+  let listData: ListDataItem[] = [];
+  const addItem = (label: string, details?: string) => {
+    listData.push({
+      rgItemType: 2,
+      key: listData.length,
+      label,
+      details,
+    });
+  };
+  const addLinkItem = (label: string, url: string) => {
+    listData.push({
+      rgItemType: 2,
+      key: listData.length,
+      label,
+      url,
+    });
+  };
+  const addTitle = (title: string) => {
     listData.push({
       rgItemType: 5,
       key: listData.length,
-      label: relation,
+      label: title,
     });
-    for (let link of links) {
-      if (link.sourceToTarget === relation) {
-        listData.push({
-          rgItemType: 2,
-          key: listData.length,
-          label: link.targetId,
-        });
+  };
+  const title = issue?.summary ? `${issue.id}: ${issue.summary}` : issue.id;
+  if (issue?.state != undefined) {
+    addItem("State", issue.state);
+  }
+  if (issue?.assignee != undefined) {
+    addItem("Assignee", issue.assignee);
+  }
+
+  const getRelation = (link: IssueLink) => (link.direction === "OUTWARD" ? link.sourceToTarget : link.targetToSource);
+
+  const relations = issue.links
+    .map(getRelation)
+    .filter((item, i, ar) => ar.indexOf(item) === i)
+    .sort();
+  for (let relation of relations) {
+    addTitle(relation);
+    for (let link of issue.links) {
+      const linkRelation = getRelation(link);
+      if (linkRelation === relation) {
+        addLinkItem(link.targetId, `/issue/${link.targetId}`);
       }
     }
   }
   return (
-    <Island>
-      <Header>{issue.id}: {issue.summary}</Header>
+    <Island narrow>
+      <Header border>{title}</Header>
       <Content>
-        <List data={listData} />
+        <List compact data={listData} />
       </Content>
     </Island>
   );

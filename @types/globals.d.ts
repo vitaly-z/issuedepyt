@@ -27,16 +27,9 @@ export interface InstanceAwareAPILayer extends BaseAPILayer {
 }
 
 /*
- * This layer allows plugin to communicate with own backend
- */
-export interface PluginEndpointAPILayer extends InstanceAwareAPILayer {
-  fetchApp: <T = unknown>(relativeURL: string, requestParams?: RequestParams & {scope?: boolean}) => Promise<T>;
-}
-
-/*
  * This layer is only available for MARKDOWN and DASHBOARD_WIDGET extension points
  */
-export interface EmbeddableWidgetAPI extends PluginEndpointAPILayer {
+export interface EmbeddableWidgetAPI extends InstanceAwareAPILayer {
   setTitle: (label: string, labelUrl: string) => Promise<void>;
   setLoadingAnimationEnabled: (isEnabled: boolean) => Promise<void>;
 
@@ -68,7 +61,9 @@ type YTAppInterface = {
   locale: string;
   entity: {
     id: string;
-    type: 'user' | 'article' | 'ticket' | 'project' | 'app'
+    type: 'ticket';
+    summary: string;
+    resolved: boolean;
   };
   register: (appApi?: AppAPI) => Promise<HostAPI | EmbeddableWidgetAPI>;
 }

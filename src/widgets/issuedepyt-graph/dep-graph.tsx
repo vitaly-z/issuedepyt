@@ -55,7 +55,7 @@ const getEdges = (issues: {[key: string]: IssueInfo}): any[] => {
         type: "vee",
       },
       from: {
-        enabled: link.targetToSource == "parent for",
+        enabled: link.sourceToTarget == "parent for",
         scaleFactor: 0.5,
         type: "diamond",
       },

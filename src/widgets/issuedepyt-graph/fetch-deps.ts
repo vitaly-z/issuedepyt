@@ -1,6 +1,11 @@
 import type {HostAPI} from '../../../@types/globals';
 import type {IssueInfo} from './issue-types';
 
+interface FetchDepsIssue {
+  id: string;
+  summary: string;
+}
+
 async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   const linkFields = "id,direction," +
     "linkType(name,sourceToTarget,targetToSource,directed,aggregation)," +
@@ -93,11 +98,11 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
 };
 
 
-export async function fetchDeps(host: HostAPI, issueID: string): Promise<any> {
+export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue): Promise<any> {
   let issues = {
-    [issueID]: {
-      id: issueID,
-      summary: undefined,
+    [issue.id]: {
+      id: issue.id,
+      summary: issue.summary,
       state: undefined,
       assignee: undefined,
       resolved: undefined,
@@ -106,7 +111,7 @@ export async function fetchDeps(host: HostAPI, issueID: string): Promise<any> {
       links: [],
     }
   }
-  const linksFlat = await fetchDepsRecursive(host, issueID, MAX_DEPTH, issues);
+  await fetchDepsRecursive(host, issue.id, MAX_DEPTH, issues);
 
   return issues;
 }
