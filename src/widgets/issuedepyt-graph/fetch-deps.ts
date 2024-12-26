@@ -20,7 +20,6 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   return issue;
 }
 
-const MAX_DEPTH = 10;
 const LINK_DEPENDS_ON = ["INWARD", "Depend"];
 const LINK_SUBTASK = ["OUTWARD", "Subtask"];
 
@@ -98,7 +97,7 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
 };
 
 
-export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue): Promise<any> {
+export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: number): Promise<any> {
   let issues = {
     [issue.id]: {
       id: issue.id,
@@ -111,7 +110,8 @@ export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue): Promise<a
       links: [],
     }
   }
-  await fetchDepsRecursive(host, issue.id, MAX_DEPTH, issues);
+  console.log("Max depth: ", maxDepth);
+  await fetchDepsRecursive(host, issue.id, maxDepth, issues);
 
   return issues;
 }

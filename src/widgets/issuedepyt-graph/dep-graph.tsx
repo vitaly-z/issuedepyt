@@ -10,6 +10,8 @@ interface DepGraphProps {
   setSelectedNode: (nodeId: string) => void;
 }
 
+const NODE_TITLE_MAX_LENGTH = 50;
+
 const getColor = (resolved: any, state?: string): any => {
   let color = COLOR_PALETTE[29];
   if (resolved) {
@@ -27,31 +29,47 @@ const getTextColor = (resolved: any, state?: string): any => {
   return getColor(resolved, state).fg;
 };
 
-const getNodeLabel = (issue: IssueInfo) => {
-  let lines = [
-    (issue?.summary) ? `${issue.id}: ${issue.summary}` : issue.id,
-  ];
+const splitLines = (text: string, maxLength: number): string[] => {
+  let lines = [];
+  if (text.length > maxLength) {
+    let words = text.split(' ');
+    let currentLine = '';
+    words.forEach(word => {
+      if ((currentLine + word).length <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+  } else {
+    lines.push(text);
+  }
+  return lines;
+}
+
+const getNodeLabel = (issue: IssueInfo): string => {
+  const summary = (issue?.summary) ? `${issue.id}: ${issue.summary}` : issue.id;
+  let lines = [...splitLines(summary, NODE_TITLE_MAX_LENGTH)];
+
   if (issue?.state) {
     lines.push(`[${issue.state}]`);
-  }
-  if (issue?.maxDepthReached) {
-    lines.push("<i>Max depth reached!</i>");
   }
   return lines.join("\n");
 };
 
-const getNodes = (issues: {[key: string]: IssueInfo}): any[] => {
-  return Object.values(issues).map((issue: IssueInfo) => ({
+const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edges: any[]} => {
+  let nodes = Object.values(issues).map((issue: IssueInfo) => ({
     id: issue.id,
     label: getNodeLabel(issue),
     font: {multi: "html", color: getTextColor(issue.resolved, issue.state)},
     color: getNodeColor(issue.resolved, issue.state),
     shape: (issue.isRoot) ? "ellipse" : "box",
   }));
-};
-
-const getEdges = (issues: {[key: string]: IssueInfo}): any[] => {
-  return Object.values(issues).flatMap((issue: IssueInfo) => (issue.links.map((link: IssueLink) => ({
+  let edges = Object.values(issues).flatMap((issue: IssueInfo) => (issue.links.map((link: IssueLink) => ({
     to: link.targetId,
     from: issue.id,
     label: link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
@@ -66,8 +84,45 @@ const getEdges = (issues: {[key: string]: IssueInfo}): any[] => {
         scaleFactor: 0.5,
         type: "diamond",
       },
-    }
+    },
+    dashes: false,
   }))));
+
+  // Add nodes when maxdepth reached.
+  Object.values(issues)
+    .filter((issue: IssueInfo) => issue.maxDepthReached)
+    .forEach((issue: IssueInfo, index: number) => {
+      let nodeColor = COLOR_PALETTE[16];
+      const unknownId = `${issue.id}-${index}`;
+      nodes.push({
+        id: unknownId,
+        label: "?",
+        font: {multi: "html", color: nodeColor.fg},
+        color: nodeColor.bg,
+        shape: "circle",
+        // @ts-ignore
+        title: "Max depth reached",
+      });
+      edges.push({
+        from: issue.id,
+        to: unknownId,
+        label: "",
+        arrows: {
+          to: {
+            enabled: true,
+            scaleFactor: 0.5,
+            type: "vee",
+          },
+          from: {
+            enabled: false,
+            scaleFactor: 0.5,
+            type: "diamond",
+          },
+        },
+        dashes: true,
+      });
+    });
+  return {nodes, edges};
 };
 
 const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, setSelectedNode }) => {
@@ -75,8 +130,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, set
 
   useEffect(() => {
     if (containerRef.current) {
-      const nodes = getNodes(issues);
-      const edges = getEdges(issues);
+      const { nodes, edges } = getGraphObjects(issues);
       const nodesDataSet = new DataSet(nodes);
       // @ts-ignore
       const edgesDataSet = new DataSet(edges);
