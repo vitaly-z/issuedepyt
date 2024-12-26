@@ -1,4 +1,5 @@
 import type {HostAPI} from '../../../@types/globals';
+import type {IssueInfo} from './issue-types';
 
 async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   const linkFields = "id,direction," +
@@ -14,6 +15,7 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   return issue;
 }
 
+const MAX_DEPTH = 10;
 const LINK_DEPENDS_ON = ["INWARD", "Depend"];
 const LINK_SUBTASK = ["OUTWARD", "Subtask"];
 
@@ -22,9 +24,9 @@ const getCustomField = (name: string, fields: Array<{name: string, value: any}>)
   return field ? field.value : null;
 };
 
-async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number): Promise<any> {
+async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, issues: {[key: string]: IssueInfo}): Promise<any> {
   if (depth == 0) {
-    return [];
+    return;
   }
 
   const links = await fetchIssueLinks(host, issueID);
@@ -48,80 +50,63 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number)
       state: getCustomField("State", issue.customFields)?.name,
       assignee: getCustomField("Assignee", issue.customFields)?.name,
       resolved: issue.resolved,
+      direction: link.direction,
+      targetToSource: link.linkType.targetToSource,
+      sourceToTarget: link.linkType.sourceToTarget,
       relation: link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
       maxDepthReached: depth == 1,
     }))
   );
 
-  const promises = linksFlat.map((link: any) => fetchDepsRecursive(host, link.id, depth - 1));
-  const results = await Promise.all(promises);
-  return linksFlat.concat(results.flat());
-};
-
-const getNodeColor = (resolved: any, state: string): any => {
-  let color = "#d2e5ff";
-  if (resolved) {
-    color = "#7be141";
-  } else if (state === "In Progress" || state === "In Review") {
-    color = "#ffff00";
+  for (let link of linksFlat) {
+    issues[issueID].links.push({
+      targetId: link.id,
+      targetToSource: link.targetToSource,
+      sourceToTarget: link.sourceToTarget,
+      direction: link.direction,
+    });
   }
 
-  return color;
+  const linksToFetch = linksFlat.filter((link: any) => !(link.id in issues));
+
+  for (let link of linksFlat) {
+    if (link.id in issues) {
+      continue;
+    }
+
+    issues[link.id] = {
+      id: link.id,
+      summary: link.summary,
+      state: link.state,
+      assignee: link.assignee,
+      resolved: link.resolved,
+      maxDepthReached: link.maxDepthReached,
+      isRoot: false,
+      links: [],
+    };
+  }
+
+
+  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth - 1, issues));
+  await Promise.all(promises);
+  return;
 };
 
+
 export async function fetchDeps(host: HostAPI, issueID: string): Promise<any> {
-  const links = await fetchIssueLinks(host, issueID);
-
-  const followLinks = [
-    LINK_DEPENDS_ON,
-    LINK_SUBTASK,
-  ];
-
-  const linksToFollow = links.filter((link: any) => {
-    return followLinks.some(([direction, type]) => 
-      link.direction === direction && link.linkType.name === type
-    );
-  });
-
-  const linksFlat = await fetchDepsRecursive(host, issueID, 10);
-
-  const rootNode = {id: issueID, label: `${issueID}`, shape: "ellipse"};
-  const getNodeLabel = (issue: any) => {
-    let lines = [
-      `${issue.id}: ${issue.summary}`,
-      `[${issue.state}]`
-    ];
-    if (issue?.maxDepthReached) {
-      lines.push("<i>Max depth reached!</i>");
+  let issues = {
+    [issueID]: {
+      id: issueID,
+      summary: undefined,
+      state: undefined,
+      assignee: undefined,
+      resolved: undefined,
+      maxDepthReached: false,
+      isRoot: true,
+      links: [],
     }
-    return lines.join("\n");
-  };
-  const depNodes = linksFlat.map((link: any) => ({
-    id: link.id,
-    label: getNodeLabel(link),
-    font: {multi: "html"},
-    color: getNodeColor(link.resolved, link.state)
-  }));
-  const nodes = [rootNode, ...depNodes];
-  const edges = linksFlat.map((link: any) => ({
-    to: link.id,
-    from: link.sourceId,
-    label: link.relation,
-    arrows: {
-      to: {
-        enabled: true,
-        scaleFactor: 0.5,
-        type: "vee",
-      },
-      from: {
-        enabled: link.relation == "parent for",
-        scaleFactor: 0.5,
-        type: "diamond",
-      },
-    }
-  }));
+  }
+  const linksFlat = await fetchDepsRecursive(host, issueID, MAX_DEPTH, issues);
 
-  const issues = Object.fromEntries(linksFlat.map((link: any) => [link.id, link]));
-
-  return {nodes, edges, issues};
+  return issues;
 }
