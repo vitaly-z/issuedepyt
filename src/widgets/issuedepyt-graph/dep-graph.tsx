@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { DataSet } from 'vis-data/peer/esm/vis-data';
 import { Network } from 'vis-network/standalone/esm/vis-network';
 import type {IssueInfo, IssueLink} from './issue-types';
+import { COLOR_PALETTE } from './colors';
 
 interface DepGraphProps {
   issues: { [id: string]: IssueInfo };
@@ -9,15 +10,21 @@ interface DepGraphProps {
   setSelectedNode: (nodeId: string) => void;
 }
 
-const getNodeColor = (resolved: any, state?: string): any => {
-  let color = "#d2e5ff";
+const getColor = (resolved: any, state?: string): any => {
+  let color = COLOR_PALETTE[29];
   if (resolved) {
-    color = "#7be141";
+    color = COLOR_PALETTE[3];
   } else if (state === "In Progress" || state === "In Review") {
-    color = "#ffff00";
+    color = COLOR_PALETTE[13];
   }
 
   return color;
+};
+const getNodeColor = (resolved: any, state?: string): any => {
+  return getColor(resolved, state).bg;
+};
+const getTextColor = (resolved: any, state?: string): any => {
+  return getColor(resolved, state).fg;
 };
 
 const getNodeLabel = (issue: IssueInfo) => {
@@ -37,7 +44,7 @@ const getNodes = (issues: {[key: string]: IssueInfo}): any[] => {
   return Object.values(issues).map((issue: IssueInfo) => ({
     id: issue.id,
     label: getNodeLabel(issue),
-    font: {multi: "html"},
+    font: {multi: "html", color: getTextColor(issue.resolved, issue.state)},
     color: getNodeColor(issue.resolved, issue.state),
     shape: (issue.isRoot) ? "ellipse" : "box",
   }));
@@ -119,7 +126,6 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, set
       let network = new Network(containerRef.current, data, options);
       const rootNode = Object.values(issues).find((issue) => issue.isRoot);
       if (rootNode) {
-        network.focus(rootNode.id, { scale: 1 });
         network.selectNodes([rootNode.id]);
         setSelectedNode(rootNode.id);
       }

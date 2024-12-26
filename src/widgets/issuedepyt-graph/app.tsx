@@ -32,7 +32,7 @@ const AppComponent: React.FunctionComponent = () => {
         <ButtonToolbar>
           <Button onClick={refreshData} icon={updateIcon}>Refresh</Button>
           {(selectedNode !== null) && (selectedNode != issue.id) && selectedNode in issueData && (
-            <Button primary href={`/issue/${selectedNode}`}>Open {selectedNode}</Button>
+            <Button href={`/issue/${selectedNode}`}>Open {selectedNode}</Button>
           )}
         </ButtonToolbar>
         {Object.keys(issueData).length > 0 && (
