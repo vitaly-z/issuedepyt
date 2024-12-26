@@ -77,7 +77,13 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, set
       const data = { nodes: nodesDataSet, edges: edgesDataSet };
       const options = {
         physics: {
-          stabilization: false,
+          stabilization: true,
+          barnesHut: {
+            avoidOverlap: 0.2,
+          },
+          hierarchicalRepulsion: {
+            avoidOverlap: 1,
+          },
         },
         autoResize: false,
         nodes: {
@@ -96,11 +102,14 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, set
             opacity: 1,
           }
         },
+        interaction: {
+          navigationButtons: true,
+        },
         /*
         layout: {
           hierarchical: {
             direction: 'UD',
-            sortMethod: 'directed',
+            sortMethod: 'hubsize',
           }
         }
         */
@@ -108,9 +117,14 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, set
 
       // @ts-ignore
       let network = new Network(containerRef.current, data, options);
+      const rootNode = Object.values(issues).find((issue) => issue.isRoot);
+      if (rootNode) {
+        network.focus(rootNode.id, { scale: 1 });
+        network.selectNodes([rootNode.id]);
+        setSelectedNode(rootNode.id);
+      }
 
       network.on('click', (params) => {
-        console.log('Clicked network:', params);
         const nodes = params.nodes;
         if (nodes.length > 0) {
           setSelectedNode(nodes[0]);
