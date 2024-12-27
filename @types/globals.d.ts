@@ -62,8 +62,6 @@ type YTAppInterface = {
   entity: {
     id: string;
     type: 'ticket';
-    summary: string;
-    resolved: boolean;
   };
   register: (appApi?: AppAPI) => Promise<HostAPI | EmbeddableWidgetAPI>;
 }

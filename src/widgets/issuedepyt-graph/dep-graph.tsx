@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { DataSet } from 'vis-data/peer/esm/vis-data';
 import { Network } from 'vis-network/standalone/esm/vis-network';
 import type {IssueInfo, IssueLink} from './issue-types';
-import { COLOR_PALETTE } from './colors';
+import { COLOR_PALETTE, ColorPaletteItem } from './colors';
 
 interface DepGraphProps {
   issues: { [id: string]: IssueInfo };
@@ -11,22 +11,29 @@ interface DepGraphProps {
 }
 
 const NODE_TITLE_MAX_LENGTH = 50;
+const STARTED_STATES = ["in progress", "in review"];
 
-const getColor = (resolved: any, state?: string): any => {
-  let color = COLOR_PALETTE[29];
+const getColor = (resolved: any, state: string | undefined, isRoot: boolean): ColorPaletteItem => {
+  const notStartedColor = isRoot ? COLOR_PALETTE[25] : COLOR_PALETTE[29];
+  const doneColor = isRoot ? COLOR_PALETTE[10] : COLOR_PALETTE[3];
+  const startedColor = isRoot ? COLOR_PALETTE[18] : COLOR_PALETTE[13];
+
+  let color = notStartedColor;
   if (resolved) {
-    color = COLOR_PALETTE[3];
-  } else if (state === "In Progress" || state === "In Review") {
-    color = COLOR_PALETTE[13];
+    color = doneColor;
+  } else if (state && STARTED_STATES.includes(state.toLowerCase())) {
+    color = startedColor;
   }
 
   return color;
 };
-const getNodeColor = (resolved: any, state?: string): any => {
-  return getColor(resolved, state).bg;
+
+const getNodeColor = (resolved: any, state: string | undefined, isRoot: boolean): string => {
+  return getColor(resolved, state, isRoot).bg;
 };
-const getTextColor = (resolved: any, state?: string): any => {
-  return getColor(resolved, state).fg;
+
+const getTextColor = (resolved: any, state: string | undefined, isRoot: boolean): string => {
+  return getColor(resolved, state, isRoot).fg;
 };
 
 const splitLines = (text: string, maxLength: number): string[] => {
@@ -52,11 +59,16 @@ const splitLines = (text: string, maxLength: number): string[] => {
 }
 
 const getNodeLabel = (issue: IssueInfo): string => {
-  const summary = (issue?.summary) ? `${issue.id}: ${issue.summary}` : issue.id;
+  const summary = (issue?.summary && !issue.isRoot) ? `${issue.id}: ${issue.summary}` : issue.id;
   let lines = [...splitLines(summary, NODE_TITLE_MAX_LENGTH)];
 
+  let flags = [];
   if (issue?.state) {
-    lines.push(`[${issue.state}]`);
+    flags.push(issue.state);
+  }
+  flags.push((issue?.assignee !== undefined && issue.assignee.length > 0) ? "Assigned" : "Unassigned");
+  if (flags.length > 0) {
+    lines.push(`[${flags.join(", ")}]`);
   }
   return lines.join("\n");
 };
@@ -65,9 +77,9 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
   let nodes = Object.values(issues).map((issue: IssueInfo) => ({
     id: issue.id,
     label: getNodeLabel(issue),
-    font: {multi: "html", color: getTextColor(issue.resolved, issue.state)},
-    color: getNodeColor(issue.resolved, issue.state),
-    shape: (issue.isRoot) ? "ellipse" : "box",
+    font: {color: getTextColor(issue.resolved, issue.state, issue.isRoot)},
+    color: getNodeColor(issue.resolved, issue.state, issue.isRoot),
+    shape: "box",
   }));
   let edges = Object.values(issues).flatMap((issue: IssueInfo) => (issue.links.map((link: IssueLink) => ({
     to: link.targetId,
@@ -97,7 +109,7 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
       nodes.push({
         id: unknownId,
         label: "?",
-        font: {multi: "html", color: nodeColor.fg},
+        font: {color: nodeColor.fg},
         color: nodeColor.bg,
         shape: "circle",
         // @ts-ignore

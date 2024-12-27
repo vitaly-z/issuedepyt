@@ -3,7 +3,18 @@ import type {IssueInfo} from './issue-types';
 
 interface FetchDepsIssue {
   id: string;
-  summary: string;
+}
+
+async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
+  const fields = "id,summary,resolved,customFields(name,value(name))"
+
+  const issue = await host.fetchYouTrack(`issues/${issueID}`, {
+    query: {
+      fields
+    }
+  });
+
+  return issue;
 }
 
 async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
@@ -98,13 +109,15 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
 
 
 export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: number): Promise<any> {
+
+  const issueInfo = await fetchIssueInfo(host, issue.id);
   let issues = {
     [issue.id]: {
       id: issue.id,
-      summary: issue.summary,
-      state: undefined,
-      assignee: undefined,
-      resolved: undefined,
+      summary: issueInfo.summary,
+      state: getCustomField("State", issueInfo.customFields)?.name,
+      assignee: getCustomField("Assignee", issueInfo.customFields)?.name,
+      resolved: issueInfo.resolved,
       maxDepthReached: false,
       isRoot: true,
       links: [],

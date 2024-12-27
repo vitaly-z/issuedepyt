@@ -67,8 +67,13 @@ export enum Color {
   AddedSubtleBackgroundColor = "#F2FCF3",
 };
 
+export interface ColorPaletteItem {
+  fg: string,
+  bg: string,
+};
+
 /* Colors from https://www.jetbrains.com/help/youtrack/devportal/Color-Indices.html */
-export const COLOR_PALETTE = [
+export const COLOR_PALETTE: ColorPaletteItem[] = [
   /* 0 */ {fg: "#444", bg: "#fff"},
   /* 1 */ {fg: "#fff", bg: "#8d5100"},
   /* 2 */ {fg: "#fff", bg: "#ce6700"},
