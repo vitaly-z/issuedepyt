@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import type {IssueInfo, IssueLink} from './issue-types';
 import Island, {Header, Content} from '@jetbrains/ring-ui-built/components/island/island';
 import List from '@jetbrains/ring-ui-built/components/list/list';

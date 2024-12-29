@@ -6,6 +6,7 @@ import { COLOR_PALETTE, ColorPaletteItem } from './colors';
 
 interface DepGraphProps {
   issues: { [id: string]: IssueInfo };
+  maxNodeWidth: number | undefined;
   onClick?: (nodeId: string) => void;
   setSelectedNode: (nodeId: string) => void;
 }
@@ -60,7 +61,8 @@ const splitLines = (text: string, maxLength: number): string[] => {
 
 const getNodeLabel = (issue: IssueInfo): string => {
   const summary = (issue?.summary && !issue.isRoot) ? `${issue.id}: ${issue.summary}` : issue.id;
-  let lines = [...splitLines(summary, NODE_TITLE_MAX_LENGTH)];
+  //let lines = [...splitLines(summary, NODE_TITLE_MAX_LENGTH)];
+  let lines = [summary];
 
   let flags = [];
   if (issue?.state) {
@@ -137,7 +139,7 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
   return {nodes, edges};
 };
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, setSelectedNode }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth, onClick, setSelectedNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -161,6 +163,9 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, onClick, set
         autoResize: false,
         nodes: {
           shape: "box",
+          widthConstraint: {
+            maximum: maxNodeWidth,
+          }
         },
         edges: {
           smooth: true,
