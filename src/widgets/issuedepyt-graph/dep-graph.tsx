@@ -7,7 +7,7 @@ import { COLOR_PALETTE, ColorPaletteItem } from './colors';
 interface DepGraphProps {
   issues: { [id: string]: IssueInfo };
   maxNodeWidth: number | undefined;
-  onClick?: (nodeId: string) => void;
+  useHierarchicalLayout: boolean;
   setSelectedNode: (nodeId: string) => void;
 }
 
@@ -111,7 +111,9 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
       nodes.push({
         id: unknownId,
         label: "?",
-        font: {color: nodeColor.fg},
+        font: {
+          color: nodeColor.fg,
+        },
         color: nodeColor.bg,
         shape: "circle",
         // @ts-ignore
@@ -120,7 +122,8 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
       edges.push({
         from: issue.id,
         to: unknownId,
-        label: "",
+        // @ts-ignore
+        length: 0.3,
         arrows: {
           to: {
             enabled: true,
@@ -139,7 +142,7 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
   return {nodes, edges};
 };
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth, onClick, setSelectedNode }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth, useHierarchicalLayout, setSelectedNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -154,15 +157,22 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth
         physics: {
           stabilization: true,
           barnesHut: {
-            avoidOverlap: 0.2,
+            avoidOverlap: 0.5,
+          },
+          forceAtlas2Based: {
+            avoidOverlap: 0.5,
           },
           hierarchicalRepulsion: {
             avoidOverlap: 1,
           },
+          solver: 'barnesHut',
         },
         autoResize: false,
         nodes: {
           shape: "box",
+          font: {
+            size: 12,
+          },
           widthConstraint: {
             maximum: maxNodeWidth,
           }
@@ -172,6 +182,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth
           width: 0.5,
           font: {
             align: 'middle',
+            size: 10,
           },
           color: {
             color: '#848484',
@@ -183,14 +194,14 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth
         interaction: {
           navigationButtons: true,
         },
-        /*
         layout: {
+          improvedLayout: true,
           hierarchical: {
+            enabled: useHierarchicalLayout,
             direction: 'UD',
             sortMethod: 'hubsize',
           }
         }
-        */
       };
 
       // @ts-ignore
@@ -205,15 +216,12 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth
         const nodes = params.nodes;
         if (nodes.length > 0) {
           setSelectedNode(nodes[0]);
-          if (onClick) {
-            onClick(nodes[0]);
-          }
         }
       });
 
       network;
     }
-  }, [issues, onClick, setSelectedNode]);
+  }, [issues, setSelectedNode]);
 
   return <div ref={containerRef} style={{ height: '500px' }} />;
 };
