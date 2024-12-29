@@ -109,7 +109,6 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
 
 
 export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: number): Promise<any> {
-
   const issueInfo = await fetchIssueInfo(host, issue.id);
   let issues = {
     [issue.id]: {
@@ -123,7 +122,6 @@ export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: 
       links: [],
     }
   }
-  console.log("Max depth: ", maxDepth);
   await fetchDepsRecursive(host, issue.id, maxDepth, issues);
 
   return issues;
