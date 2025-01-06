@@ -37,31 +37,8 @@ const getTextColor = (resolved: any, state: string | undefined, isRoot: boolean)
   return getColor(resolved, state, isRoot).fg;
 };
 
-const splitLines = (text: string, maxLength: number): string[] => {
-  let lines = [];
-  if (text.length > maxLength) {
-    let words = text.split(' ');
-    let currentLine = '';
-    words.forEach(word => {
-      if ((currentLine + word).length <= maxLength) {
-        currentLine += (currentLine ? ' ' : '') + word;
-      } else {
-        lines.push(currentLine);
-        currentLine = word;
-      }
-    });
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-  } else {
-    lines.push(text);
-  }
-  return lines;
-}
-
 const getNodeLabel = (issue: IssueInfo): string => {
   const summary = (issue?.summary && !issue.isRoot) ? `${issue.id}: ${issue.summary}` : issue.id;
-  //let lines = [...splitLines(summary, NODE_TITLE_MAX_LENGTH)];
   let lines = [summary];
 
   let flags = [];
@@ -167,7 +144,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth
           },
           solver: 'barnesHut',
         },
-        autoResize: false,
+        autoResize: true,
         nodes: {
           shape: "box",
           font: {

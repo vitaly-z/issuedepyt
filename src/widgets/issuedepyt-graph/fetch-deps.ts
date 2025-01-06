@@ -1,4 +1,5 @@
 import type {HostAPI} from '../../../@types/globals';
+import type {Settings} from '../../../@types/settings';
 import type {IssueInfo} from './issue-types';
 
 interface FetchDepsIssue {
@@ -34,12 +35,15 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
 const LINK_DEPENDS_ON = ["INWARD", "Depend"];
 const LINK_SUBTASK = ["OUTWARD", "Subtask"];
 
-const getCustomField = (name: string, fields: Array<{name: string, value: any}>): any => {
+const getCustomField = (name: string | undefined, fields: Array<{name: string, value: any}>): any => {
+  if (name === undefined) {
+    return null;
+  }
   const field = fields.find((field) => field.name === name);
   return field ? field.value : null;
 };
 
-async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, issues: {[key: string]: IssueInfo}): Promise<any> {
+async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
   if (depth == 0) {
     return;
   }
@@ -62,8 +66,8 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       id: issue.idReadable,
       sourceId: issueID,
       summary: issue.summary,
-      state: getCustomField("State", issue.customFields)?.name,
-      assignee: getCustomField("Assignee", issue.customFields)?.name,
+      state: getCustomField(settings?.stateField, issue.customFields)?.name,
+      assignee: getCustomField(settings?.assigneeField, issue.customFields)?.name,
       resolved: issue.resolved,
       direction: link.direction,
       targetToSource: link.linkType.targetToSource,
@@ -102,27 +106,27 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
   }
 
 
-  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth - 1, issues));
+  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth - 1, settings, issues));
   await Promise.all(promises);
   return;
 };
 
 
-export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: number): Promise<any> {
+export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: number, settings: Settings): Promise<any> {
   const issueInfo = await fetchIssueInfo(host, issue.id);
   let issues = {
     [issue.id]: {
       id: issue.id,
       summary: issueInfo.summary,
-      state: getCustomField("State", issueInfo.customFields)?.name,
-      assignee: getCustomField("Assignee", issueInfo.customFields)?.name,
+      state: getCustomField(settings?.stateField, issueInfo.customFields)?.name,
+      assignee: getCustomField(settings?.assigneeField, issueInfo.customFields)?.name,
       resolved: issueInfo.resolved,
       maxDepthReached: false,
       isRoot: true,
       links: [],
     }
   }
-  await fetchDepsRecursive(host, issue.id, maxDepth, issues);
+  await fetchDepsRecursive(host, issue.id, maxDepth, settings, issues);
 
   return issues;
 }

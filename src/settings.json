@@ -4,7 +4,31 @@
     "title": "Issue Dependency Graph",
     "description": "Settings for issue dependency graph.",
     "properties": {
+        "stateField": {
+            "type": "string",
+            "title": "State field name",
+            "description": "Name of the state field.",
+            "default": "State",
+            "minLength": 1,
+            "x-scope": "PROJECT"
+        },
+        "assigneeField": {
+            "type": "string",
+            "title": "Assignee field name",
+            "description": "Name of the assignee field.",
+            "default": "Assignee",
+            "minLength": 1,
+            "x-scope": "PROJECT"
+        },
+        "autoLoadDeps": {
+            "type": "boolean",
+            "title": "Automatically load issue dependencies",
+            "description": "Load issue dependencies automatically without explicit user request.",
+            "default": false,
+            "x-scope": "GLOBAL"
+        }
     },
     "required":[
+        "stateField", "assigneeField"
     ]
 }
