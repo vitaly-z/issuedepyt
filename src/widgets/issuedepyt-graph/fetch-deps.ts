@@ -1,13 +1,24 @@
 import type {HostAPI} from '../../../@types/globals';
 import type {Settings} from '../../../@types/settings';
+import type {FieldInfo, FieldInfoField} from '../../../@types/field-info';
 import type {IssueInfo} from './issue-types';
 
-interface FetchDepsIssue {
-  id: string;
-}
-
 async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
-  const fields = "id,summary,resolved,customFields(name,value(name))"
+  const fields = `
+    idReadable,summary,resolved,
+    customFields(
+      name,
+      value(name),
+      projectCustomField(
+        name,
+        bundle(
+          values(
+            name,
+            color(id,background,foreground)
+          )
+        )
+      )
+    )`.replace(/\s+/g, '');
 
   const issue = await host.fetchYouTrack(`issues/${issueID}`, {
     query: {
@@ -21,7 +32,7 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
 async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   const linkFields = "id,direction," +
     "linkType(name,sourceToTarget,targetToSource,directed,aggregation)," +
-    "issues(id,idReadable,summary,resolved,customFields(name,value(name)))";
+    "issues(idReadable,summary,resolved,customFields(name,value(name)))";
 
   const issue = await host.fetchYouTrack(`issues/${issueID}/links`, {
     query: {
@@ -40,6 +51,11 @@ const getCustomField = (name: string | undefined, fields: Array<{name: string, v
     return null;
   }
   const field = fields.find((field) => field.name === name);
+  return field;
+};
+
+const getCustomFieldValue = (name: string | undefined, fields: Array<{name: string, value: any}>): any => {
+  const field = getCustomField(name, fields);
   return field ? field.value : null;
 };
 
@@ -66,8 +82,8 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       id: issue.idReadable,
       sourceId: issueID,
       summary: issue.summary,
-      state: getCustomField(settings?.stateField, issue.customFields)?.name,
-      assignee: getCustomField(settings?.assigneeField, issue.customFields)?.name,
+      state: getCustomFieldValue(settings?.stateField, issue.customFields)?.name,
+      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)?.name,
       resolved: issue.resolved,
       direction: link.direction,
       targetToSource: link.linkType.targetToSource,
@@ -111,22 +127,45 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
   return;
 };
 
+export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings: Settings): Promise<{issue: IssueInfo, fieldInfo: FieldInfo}> {
+  const issueInfo = await fetchIssueInfo(host, issueId);
 
-export async function fetchDeps(host: HostAPI, issue: FetchDepsIssue, maxDepth: number, settings: Settings): Promise<any> {
-  const issueInfo = await fetchIssueInfo(host, issue.id);
+  const stateField = getCustomField(settings?.stateField, issueInfo.customFields);
+  let fieldInfo : FieldInfo = {};
+  if (stateField != undefined) {
+    fieldInfo = {
+      stateField: {
+        name: stateField.name,
+        values: Object.fromEntries(stateField.projectCustomField.bundle.values.map((value: any) => ([
+          value.name, {
+          colorId: value.color.id,
+          background: value.color.background,
+          foreground: value.color.foreground,
+        }]))),
+      }
+    };
+  }
+
+  const issue : IssueInfo = {
+    id: issueInfo.idReadable,
+    summary: issueInfo.summary,
+    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
+    assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
+    resolved: issueInfo.resolved,
+    maxDepthReached: false,
+    isRoot: true,
+    links: [],
+  }
+
+  return {issue, fieldInfo};
+};
+
+export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: number, settings: Settings): Promise<{[key: string]: IssueInfo}> {
   let issues = {
-    [issue.id]: {
-      id: issue.id,
-      summary: issueInfo.summary,
-      state: getCustomField(settings?.stateField, issueInfo.customFields)?.name,
-      assignee: getCustomField(settings?.assigneeField, issueInfo.customFields)?.name,
-      resolved: issueInfo.resolved,
-      maxDepthReached: false,
-      isRoot: true,
-      links: [],
-    }
+    [issue.id]: issue,
   }
   await fetchDepsRecursive(host, issue.id, maxDepth, settings, issues);
+
 
   return issues;
 }

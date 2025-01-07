@@ -6,7 +6,8 @@ import LoaderInline from '@jetbrains/ring-ui-built/components/loader-inline/load
 import updateIcon from "@jetbrains/icons/update";
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
-import { fetchDeps } from "./fetch-deps";
+import type { FieldInfo } from "../../../@types/field-info";
+import { fetchDeps, fetchIssueAndInfo } from "./fetch-deps";
 import type { IssueInfo } from "./issue-types";
 import DepGraph from "./dep-graph";
 import IssueInfoCard from "./issue-info-card";
@@ -30,12 +31,15 @@ const AppComponent: React.FunctionComponent = () => {
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
     DEFAULT_USE_HIERARCHICAL_LAYOUT
   );
+  const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
   const [issueData, setIssueData] = useState<{ [key: string]: IssueInfo }>({});
 
   const refreshData = async () => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issue.id}...`);
-      const issues = await fetchDeps(host, issue, maxDepth, settings);
+      const {"issue": issueInfo, "fieldInfo": fieldInfoData} = await fetchIssueAndInfo(host, issue.id, settings);
+      const issues = await fetchDeps(host, issueInfo, maxDepth, settings);
+      setFieldInfo(fieldInfoData);
       setIssueData(issues);
     } else {
       console.log("Not fetching deps, graph is not visible.");
@@ -78,6 +82,7 @@ const AppComponent: React.FunctionComponent = () => {
               {Object.keys(issueData).length > 0 && (
                 <DepGraph
                   issues={issueData}
+                  fieldInfo={fieldInfo}
                   maxNodeWidth={maxNodeWidth}
                   useHierarchicalLayout={useHierarchicalLayout}
                   setSelectedNode={setSelectedNode}

@@ -4,6 +4,7 @@ export interface IssueLink {
   sourceToTarget: string;
   direction: string;
 };
+
 export interface IssueInfo {
   id: string;
   summary?: string;

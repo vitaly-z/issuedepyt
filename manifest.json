@@ -16,7 +16,8 @@
       "indexPath": "issuedepyt-graph/index.html",
       "extensionPoint": "ISSUE_ABOVE_ACTIVITY_STREAM",
       "iconPath": "issuedepyt-graph/widget-icon.svg",
-      "description": "Visualize issue dependencies."
+      "description": "Visualize issue dependencies.",
+      "permissions": ["READ_ISSUE"]
     }
   ]
 }

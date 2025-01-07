@@ -2,43 +2,37 @@ import React, { useEffect, useRef } from 'react';
 import { DataSet } from 'vis-data/peer/esm/vis-data';
 import { Network } from 'vis-network/standalone/esm/vis-network';
 import type {IssueInfo, IssueLink} from './issue-types';
+import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import { COLOR_PALETTE, ColorPaletteItem } from './colors';
 
 interface DepGraphProps {
   issues: { [id: string]: IssueInfo };
+  fieldInfo: FieldInfo;
   maxNodeWidth: number | undefined;
   useHierarchicalLayout: boolean;
   setSelectedNode: (nodeId: string) => void;
 }
 
-const NODE_TITLE_MAX_LENGTH = 50;
-const STARTED_STATES = ["in progress", "in review"];
-
-const getColor = (resolved: any, state: string | undefined, isRoot: boolean): ColorPaletteItem => {
-  const notStartedColor = isRoot ? COLOR_PALETTE[25] : COLOR_PALETTE[29];
-  const doneColor = isRoot ? COLOR_PALETTE[10] : COLOR_PALETTE[3];
-  const startedColor = isRoot ? COLOR_PALETTE[18] : COLOR_PALETTE[13];
-
-  let color = notStartedColor;
-  if (resolved) {
-    color = doneColor;
-  } else if (state && STARTED_STATES.includes(state.toLowerCase())) {
-    color = startedColor;
+const getColor = (state: string | undefined, stateFieldInfo: FieldInfoField | undefined): ColorPaletteItem | undefined => {
+  if (stateFieldInfo && state) {
+    const stateKey = Object.keys(stateFieldInfo.values).find(x => x.toLowerCase() === state.toLowerCase());
+    const colorEntry = stateKey != undefined ? stateFieldInfo.values[stateKey] : undefined;
+    if (colorEntry) {
+      return {
+        bg: colorEntry.background,
+        fg: colorEntry.foreground,
+      };
+    }
   }
 
-  return color;
-};
-
-const getNodeColor = (resolved: any, state: string | undefined, isRoot: boolean): string => {
-  return getColor(resolved, state, isRoot).bg;
-};
-
-const getTextColor = (resolved: any, state: string | undefined, isRoot: boolean): string => {
-  return getColor(resolved, state, isRoot).fg;
+  return undefined;
 };
 
 const getNodeLabel = (issue: IssueInfo): string => {
-  const summary = (issue?.summary && !issue.isRoot) ? `${issue.id}: ${issue.summary}` : issue.id;
+  let summary = "" + issue.id;
+  if (issue?.summary) {
+    summary = `${summary}: ${issue.summary}`;
+  }
   let lines = [summary];
 
   let flags = [];
@@ -52,14 +46,24 @@ const getNodeLabel = (issue: IssueInfo): string => {
   return lines.join("\n");
 };
 
-const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edges: any[]} => {
-  let nodes = Object.values(issues).map((issue: IssueInfo) => ({
-    id: issue.id,
-    label: getNodeLabel(issue),
-    font: {color: getTextColor(issue.resolved, issue.state, issue.isRoot)},
-    color: getNodeColor(issue.resolved, issue.state, issue.isRoot),
-    shape: "box",
-  }));
+const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInfo): {nodes: any[], edges: any[]} => {
+  let nodes = Object.values(issues).map((issue: IssueInfo) => {
+    const colorEntry = getColor(issue.state, fieldInfo?.stateField)
+    const node : {[key: string]: any} = {
+      id: issue.id,
+      label: getNodeLabel(issue),
+      shape: "box",
+    };
+    if (colorEntry) {
+      node.font = {color: colorEntry.fg};
+      node.color = colorEntry.bg;
+    }
+    if (issue.isRoot) {
+      node.borderWidth = 2;
+      node.borderWidthSelected = 3;
+    }
+    return node;
+  });
   let edges = Object.values(issues).flatMap((issue: IssueInfo) => (issue.links.map((link: IssueLink) => ({
     to: link.targetId,
     from: issue.id,
@@ -119,12 +123,12 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}): {nodes: any[], edg
   return {nodes, edges};
 };
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, maxNodeWidth, useHierarchicalLayout, setSelectedNode }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, fieldInfo, maxNodeWidth, useHierarchicalLayout, setSelectedNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
-      const { nodes, edges } = getGraphObjects(issues);
+      const { nodes, edges } = getGraphObjects(issues, fieldInfo);
       const nodesDataSet = new DataSet(nodes);
       // @ts-ignore
       const edgesDataSet = new DataSet(edges);
