@@ -28,9 +28,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [selectedNode, setSelectedNode] = useState<number | string | null>(null);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
-  const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
-    DEFAULT_USE_HIERARCHICAL_LAYOUT
-  );
+  const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(DEFAULT_USE_HIERARCHICAL_LAYOUT);
   const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
   const [issueData, setIssueData] = useState<{ [key: string]: IssueInfo }>({});
 
@@ -47,11 +45,15 @@ const AppComponent: React.FunctionComponent = () => {
   };
 
   useMemo(() => {
+    if ((settings?.useHierarchicalLayout != undefined) && (settings.useHierarchicalLayout != useHierarchicalLayout)) {
+      setUseHierarchicalLayout(settings.useHierarchicalLayout);
+    }
+
     if ((!graphVisible) && settings?.autoLoadDeps) {
       console.log("Auto loading deps: Showing graph.");
       setGraphVisible(true);
     }
-  }, [graphVisible, settings]);
+  }, [graphVisible, useHierarchicalLayout, settings]);
 
   useEffect(() => {
     host.fetchApp<{settings: Settings}>('backend/settings', {scope: true}).then(resp => {

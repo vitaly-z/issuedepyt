@@ -26,6 +26,13 @@
             "description": "Load issue dependencies automatically without explicit user request.",
             "default": false,
             "x-scope": "GLOBAL"
+        },
+        "useHierarchicalLayout": {
+            "type": "boolean",
+            "title": "Use hierarchical tree layout",
+            "description": "Use the hierarcical tree layout by default.",
+            "default": true,
+            "x-scope": "GLOBAL"
         }
     },
     "required":[
