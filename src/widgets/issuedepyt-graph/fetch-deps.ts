@@ -90,7 +90,6 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       sourceToTarget: link.linkType.sourceToTarget,
       relation: link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
       depth: depth,
-      maxDepthReached: depth == maxDepth - 1,
     }))
   );
 
@@ -116,8 +115,6 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       state: link.state,
       assignee: link.assignee,
       resolved: link.resolved,
-      isRoot: false,
-      maxDepthReached: link.maxDepthReached,
       depth: link.depth,
       links: [],
     };
@@ -154,8 +151,6 @@ export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings
     state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
     assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
     resolved: issueInfo.resolved,
-    isRoot: true,
-    maxDepthReached: false,
     depth: 0,
     links: [],
   }

@@ -11,8 +11,6 @@ export interface IssueInfo {
   state?: string;
   assignee?: string;
   resolved: boolean;
-  isRoot: boolean;
-  depth: number;
-  maxDepthReached: boolean;
+  depth: number;  // Root node has depth 0.
   links: Array<IssueLink>; 
 };

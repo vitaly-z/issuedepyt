@@ -6,10 +6,13 @@ import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import { COLOR_PALETTE, ColorPaletteItem } from './colors';
 
 interface DepGraphProps {
+  height: string;
   issues: { [id: string]: IssueInfo };
   fieldInfo: FieldInfo;
   maxNodeWidth: number | undefined;
+  maxDepth: number;
   useHierarchicalLayout: boolean;
+  useDepthRendering: boolean;
   setSelectedNode: (nodeId: string) => void;
 }
 
@@ -46,7 +49,7 @@ const getNodeLabel = (issue: IssueInfo): string => {
   return lines.join("\n");
 };
 
-const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInfo): {nodes: any[], edges: any[]} => {
+const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInfo, useDepthRendering: boolean, maxDepth: number): {nodes: any[], edges: any[]} => {
   let nodes = Object.values(issues).map((issue: IssueInfo) => {
     const colorEntry = getColor(issue.state, fieldInfo?.stateField)
     const node : {[key: string]: any} = {
@@ -54,11 +57,14 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       label: getNodeLabel(issue),
       shape: "box",
     };
+    if (useDepthRendering) {
+      node.level = issue.depth;
+    }
     if (colorEntry) {
       node.font = {color: colorEntry.fg};
       node.color = colorEntry.bg;
     }
-    if (issue.isRoot) {
+    if (issue.depth == 0) {
       node.borderWidth = 2;
       node.borderWidthSelected = 3;
     }
@@ -85,26 +91,28 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
 
   // Add nodes when maxdepth reached.
   Object.values(issues)
-    .filter((issue: IssueInfo) => issue.maxDepthReached)
+    .filter((issue: IssueInfo) => issue.depth === maxDepth)
     .forEach((issue: IssueInfo, index: number) => {
-      let nodeColor = COLOR_PALETTE[16];
+      const nodeColor = COLOR_PALETTE[16];
       const unknownId = `${issue.id}-${index}`;
-      nodes.push({
+      let node : any = {
         id: unknownId,
         label: "?",
+        shape: "circle",
         font: {
           color: nodeColor.fg,
         },
         color: nodeColor.bg,
-        shape: "circle",
-        // @ts-ignore
         title: "Max depth reached",
-      });
+      }
+      if (useDepthRendering) {
+        node.level = maxDepth + 1;
+      }
+      nodes.push(node);
+      // @ts-ignore
       edges.push({
         from: issue.id,
         to: unknownId,
-        // @ts-ignore
-        length: 0.3,
         arrows: {
           to: {
             enabled: true,
@@ -123,12 +131,12 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
   return {nodes, edges};
 };
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, fieldInfo, maxNodeWidth, useHierarchicalLayout, setSelectedNode }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, fieldInfo, maxNodeWidth, maxDepth, useHierarchicalLayout, useDepthRendering, setSelectedNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
-      const { nodes, edges } = getGraphObjects(issues, fieldInfo);
+      const { nodes, edges } = getGraphObjects(issues, fieldInfo, useDepthRendering, maxDepth);
       const nodesDataSet = new DataSet(nodes);
       // @ts-ignore
       const edgesDataSet = new DataSet(edges);
@@ -187,7 +195,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, fieldInfo, m
 
       // @ts-ignore
       let network = new Network(containerRef.current, data, options);
-      const rootNode = Object.values(issues).find((issue) => issue.isRoot);
+      const rootNode = Object.values(issues).find((issue) => issue.depth === 0);
       if (rootNode) {
         network.selectNodes([rootNode.id]);
         setSelectedNode(rootNode.id);
@@ -204,7 +212,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ issues, fieldInfo, m
     }
   }, [issues, setSelectedNode]);
 
-  return <div ref={containerRef} style={{ height: '500px' }} />;
+  return <div ref={containerRef} style={{ height }} />;
 };
 
 export default DepGraph;

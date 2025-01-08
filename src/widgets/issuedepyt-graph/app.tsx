@@ -4,7 +4,7 @@ import Checkbox from '@jetbrains/ring-ui-built/components/checkbox/checkbox';
 import { Tabs, Tab, CustomItem } from "@jetbrains/ring-ui-built/components/tabs/tabs";
 import Theme, { ThemeProvider } from "@jetbrains/ring-ui-built/components/global/theme";
 import LoaderInline from '@jetbrains/ring-ui-built/components/loader-inline/loader-inline';
-import updateIcon from "@jetbrains/icons/update";
+import UpdateIcon from "@jetbrains/icons/update";
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
 import type { FieldInfo } from "../../../@types/field-info";
@@ -21,6 +21,7 @@ const issue = YTApp.entity;
 const DEFAULT_MAX_DEPTH = 10;
 const DEFAULT_MAX_NODE_WIDTH = 200;
 const DEFAULT_USE_HIERARCHICAL_LAYOUT = false;
+const DEFAULT_USE_DEPTH_RENDERING = true;
 
 const AppComponent: React.FunctionComponent = () => {
   const [settings, setSettings] = useState<Settings>({});
@@ -30,6 +31,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(DEFAULT_USE_HIERARCHICAL_LAYOUT);
+  const [useDepthRendering, setUseDepthRendering] = useState<boolean>(DEFAULT_USE_DEPTH_RENDERING);
   const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
   const [issueData, setIssueData] = useState<{ [key: string]: IssueInfo }>({});
 
@@ -66,7 +68,7 @@ const AppComponent: React.FunctionComponent = () => {
 
   useEffect(() => {
     refreshData();
-  }, [host, issue, graphVisible, useHierarchicalLayout, maxDepth, settings]);
+  }, [host, issue, graphVisible, useHierarchicalLayout, useDepthRendering, maxDepth, settings]);
 
   return (
     <div className="widget">
@@ -84,10 +86,13 @@ const AppComponent: React.FunctionComponent = () => {
               )}
               {Object.keys(issueData).length > 0 && (
                 <DepGraph
+                  height="500px"
                   issues={issueData}
                   fieldInfo={fieldInfo}
                   maxNodeWidth={maxNodeWidth}
+                  maxDepth={maxDepth}
                   useHierarchicalLayout={useHierarchicalLayout}
+                  useDepthRendering={useDepthRendering}
                   setSelectedNode={setSelectedNode}
                 />
               )}
@@ -104,10 +109,13 @@ const AppComponent: React.FunctionComponent = () => {
               />
             </Tab>
             <CustomItem>
-              <Button onClick={refreshData} icon={updateIcon}>
+              <Button onClick={refreshData} icon={UpdateIcon}>
                 Refresh
               </Button>
               <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
+              {useHierarchicalLayout && (
+                <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
+              )}
             </CustomItem>
           </Tabs>
         )}
