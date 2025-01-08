@@ -59,8 +59,8 @@ const getCustomFieldValue = (name: string | undefined, fields: Array<{name: stri
   return field ? field.value : null;
 };
 
-async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
-  if (depth == 0) {
+async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, maxDepth: number, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
+  if (depth == (maxDepth + 1)) {
     return;
   }
 
@@ -89,7 +89,8 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       targetToSource: link.linkType.targetToSource,
       sourceToTarget: link.linkType.sourceToTarget,
       relation: link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
-      maxDepthReached: depth == 1,
+      depth: depth,
+      maxDepthReached: depth == maxDepth - 1,
     }))
   );
 
@@ -115,14 +116,15 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       state: link.state,
       assignee: link.assignee,
       resolved: link.resolved,
-      maxDepthReached: link.maxDepthReached,
       isRoot: false,
+      maxDepthReached: link.maxDepthReached,
+      depth: link.depth,
       links: [],
     };
   }
 
 
-  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth - 1, settings, issues));
+  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth + 1, maxDepth, settings, issues));
   await Promise.all(promises);
   return;
 };
@@ -152,8 +154,9 @@ export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings
     state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
     assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
     resolved: issueInfo.resolved,
-    maxDepthReached: false,
     isRoot: true,
+    maxDepthReached: false,
+    depth: 0,
     links: [],
   }
 
@@ -164,7 +167,7 @@ export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: numbe
   let issues = {
     [issue.id]: issue,
   }
-  await fetchDepsRecursive(host, issue.id, maxDepth, settings, issues);
+  await fetchDepsRecursive(host, issue.id, 1, maxDepth, settings, issues);
 
 
   return issues;

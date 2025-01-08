@@ -7,11 +7,12 @@ export interface IssueLink {
 
 export interface IssueInfo {
   id: string;
-  summary?: string;
+  summary: string;
   state?: string;
   assignee?: string;
-  resolved?: boolean;
-  maxDepthReached: boolean;
+  resolved: boolean;
   isRoot: boolean;
+  depth: number;
+  maxDepthReached: boolean;
   links: Array<IssueLink>; 
 };
