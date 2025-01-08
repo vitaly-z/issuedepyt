@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
+import Checkbox from '@jetbrains/ring-ui-built/components/checkbox/checkbox';
 import { Tabs, Tab, CustomItem } from "@jetbrains/ring-ui-built/components/tabs/tabs";
 import Theme, { ThemeProvider } from "@jetbrains/ring-ui-built/components/global/theme";
 import LoaderInline from '@jetbrains/ring-ui-built/components/loader-inline/loader-inline';
@@ -45,27 +46,27 @@ const AppComponent: React.FunctionComponent = () => {
   };
 
   useMemo(() => {
-    if ((settings?.useHierarchicalLayout != undefined) && (settings.useHierarchicalLayout != useHierarchicalLayout)) {
-      setUseHierarchicalLayout(settings.useHierarchicalLayout);
-    }
-
     if ((!graphVisible) && settings?.autoLoadDeps) {
       console.log("Auto loading deps: Showing graph.");
       setGraphVisible(true);
     }
-  }, [graphVisible, useHierarchicalLayout, settings]);
+  }, [graphVisible, settings]);
 
   useEffect(() => {
     host.fetchApp<{settings: Settings}>('backend/settings', {scope: true}).then(resp => {
       const newSettings = resp.settings;
       console.log("Got settings", newSettings);
       setSettings(newSettings);
+
+      if (newSettings?.useHierarchicalLayout != undefined) {
+        setUseHierarchicalLayout(newSettings.useHierarchicalLayout);
+      }
     });
   }, [host]);
 
   useEffect(() => {
     refreshData();
-  }, [host, issue, graphVisible, maxDepth, settings]);
+  }, [host, issue, graphVisible, useHierarchicalLayout, maxDepth, settings]);
 
   return (
     <div className="widget">
@@ -100,14 +101,13 @@ const AppComponent: React.FunctionComponent = () => {
                 setMaxDepth={setMaxDepth}
                 maxNodeWidth={maxNodeWidth}
                 setMaxNodeWidth={setMaxNodeWidth}
-                useHierarchicalLayout={useHierarchicalLayout}
-                setUseHierarchicalLayout={setUseHierarchicalLayout}
               />
             </Tab>
             <CustomItem>
               <Button onClick={refreshData} icon={updateIcon}>
                 Refresh
               </Button>
+              <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
             </CustomItem>
           </Tabs>
         )}
