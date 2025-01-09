@@ -117,9 +117,12 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       resolved: link.resolved,
       depth: link.depth,
       links: [],
+      linksKnown: false,
     };
   }
 
+  // Links are now fetched and known.
+  issues[issueID].linksKnown = true;
 
   const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth + 1, maxDepth, settings, issues));
   await Promise.all(promises);
@@ -153,6 +156,7 @@ export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings
     resolved: issueInfo.resolved,
     depth: 0,
     links: [],
+    linksKnown: false,
   }
 
   return {issue, fieldInfo};
@@ -164,6 +168,21 @@ export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: numbe
   }
   await fetchDepsRecursive(host, issue.id, 1, maxDepth, settings, issues);
 
-
   return issues;
+}
+
+export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues: {[key: string]: IssueInfo}, maxDepth: number, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+  if (!(issueId in issues)) {
+    console.log(`Failed to fetch issues for ${issueId}: issue unknown`);
+    return issues;
+  }
+
+  const issue = issues[issueId];
+
+  const newIssues = Object.assign({}, issues);
+  const depsDepth = issue.depth + 1;
+  const newMaxDepth = Math.max(maxDepth, depsDepth);
+  await fetchDepsRecursive(host, issueId, issue.depth + 1, newMaxDepth, settings, newIssues);
+
+  return newIssues;
 }

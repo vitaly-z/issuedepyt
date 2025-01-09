@@ -20,25 +20,33 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
 
   const title = issue?.summary ? `${issue.id}: ${issue.summary}` : issue.id;
 
+  console.log(`Showing issue ${issue.id}`);
+
   const getRelation = (link: IssueLink) => (link.direction === "OUTWARD" ? link.sourceToTarget : link.targetToSource);
 
-  const relations = issue.links
-    .map(getRelation)
-    .filter((item, i, ar) => ar.indexOf(item) === i)
-    .sort();
-
   let relationComps = [];
-  for (let relation of relations) {
-    let tags = [];
-    for (let link of issue.links) {
-      const linkRelation = getRelation(link);
-      if (linkRelation === relation) {
-        tags.push(<Tag readOnly><Link href={`/issue/${link.targetId}`}>{link.targetId}</Link></Tag>)
+  if (issue.linksKnown) {
+    const relations = issue.links
+      .map(getRelation)
+      .filter((item, i, ar) => ar.indexOf(item) === i)
+      .sort();
+
+    for (let relation of relations) {
+      let tags = [];
+      for (let link of issue.links) {
+        const linkRelation = getRelation(link);
+        if (linkRelation === relation) {
+          tags.push(<Tag readOnly><Link href={`/issue/${link.targetId}`}>{link.targetId}</Link></Tag>)
+        }
       }
+      relationComps.push(<p>
+        <Text size={Text.Size.S} info>{relation}</Text>
+        <div children={tags} />
+      </p>);
     }
+  } else {
     relationComps.push(<p>
-      <Text size={Text.Size.S} info>{relation}</Text>
-      <div children={tags} />
+      <Text size={Text.Size.S} info>Dependencies not loaded.</Text>
     </p>);
   }
 

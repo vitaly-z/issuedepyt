@@ -8,15 +8,19 @@ import { COLOR_PALETTE, ColorPaletteItem } from './colors';
 interface DepGraphProps {
   height: string;
   issues: { [id: string]: IssueInfo };
+  selectedIssueId: string | null;
   fieldInfo: FieldInfo;
   maxNodeWidth: number | undefined;
-  maxDepth: number;
   useHierarchicalLayout: boolean;
   useDepthRendering: boolean;
   setSelectedNode: (nodeId: string) => void;
+  onOpenNode: (nodeId: string) => void;
 }
 
-const getColor = (state: string | undefined, stateFieldInfo: FieldInfoField | undefined): ColorPaletteItem | undefined => {
+const FONT_FAMILY = 'system-ui, Arial, sans-serif';
+const FONT_FAMILY_MONOSPACE = 'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
+
+  const getColor = (state: string | undefined, stateFieldInfo: FieldInfoField | undefined): ColorPaletteItem | undefined => {
   if (stateFieldInfo && state) {
     const stateKey = Object.keys(stateFieldInfo.values).find(x => x.toLowerCase() === state.toLowerCase());
     const colorEntry = stateKey != undefined ? stateFieldInfo.values[stateKey] : undefined;
@@ -34,7 +38,7 @@ const getColor = (state: string | undefined, stateFieldInfo: FieldInfoField | un
 const getNodeLabel = (issue: IssueInfo): string => {
   let summary = "" + issue.id;
   if (issue?.summary) {
-    summary = `${summary}: ${issue.summary}`;
+    summary = `<b>${summary}: ${issue.summary}</b>`;
   }
   let lines = [summary];
 
@@ -44,18 +48,44 @@ const getNodeLabel = (issue: IssueInfo): string => {
   }
   flags.push((issue?.assignee !== undefined && issue.assignee.length > 0) ? "Assigned" : "Unassigned");
   if (flags.length > 0) {
-    lines.push(`[${flags.join(", ")}]`);
+    lines.push(`<code>[${flags.join(", ")}]</code>`);
   }
+  if (!issue.linksKnown) {
+    lines.push("");
+    lines.push("<i>Dependencies unknown!</i>");
+  }
+
   return lines.join("\n");
 };
 
-const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInfo, useDepthRendering: boolean, maxDepth: number): {nodes: any[], edges: any[]} => {
+const getNodeTooltip = (issue: IssueInfo): string => {
+  let lines = [];
+  lines.push(`${issue.id}`);
+  if (issue?.state) {
+    lines.push(`State: ${issue.state}`);
+  }
+  if (issue?.assignee != undefined && issue.assignee.length > 0) {
+    lines.push(`Assignee: ${issue.assignee}`);
+  }
+  lines.push("Click to select and double-click to open.");
+
+  if (!issue.linksKnown) {
+    lines.push("");
+    lines.push(`Max depth reached at ${issue.id}!`);
+    lines.push("Double-click to load dependencies.");
+  }
+
+  return lines.join("\n");
+};
+
+const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInfo, useDepthRendering: boolean): {nodes: any[], edges: any[]} => {
   let nodes = Object.values(issues).map((issue: IssueInfo) => {
     const colorEntry = getColor(issue.state, fieldInfo?.stateField)
     const node : {[key: string]: any} = {
       id: issue.id,
       label: getNodeLabel(issue),
       shape: "box",
+      title: getNodeTooltip(issue),
     };
     if (useDepthRendering) {
       node.level = issue.depth;
@@ -78,7 +108,7 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       to: {
         enabled: true,
         scaleFactor: 0.5,
-        type: "vee",
+        type: "normal",
       },
       from: {
         enabled: link.sourceToTarget == "parent for",
@@ -89,14 +119,15 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
     dashes: false,
   }))));
 
-  // Add nodes when maxdepth reached.
+  // Add nodes when links unknown.
+  /*
   Object.values(issues)
-    .filter((issue: IssueInfo) => issue.depth === maxDepth)
+    .filter((issue: IssueInfo) => !issue.linksKnown)
     .forEach((issue: IssueInfo, index: number) => {
       const nodeColor = COLOR_PALETTE[16];
-      const unknownId = `${issue.id}-${index}`;
+      const unknownLinksNodeId = `${issue.id}:${index}:unknownlinks`;
       let node : any = {
-        id: unknownId,
+        id: unknownLinksNodeId,
         label: "?",
         shape: "circle",
         font: {
@@ -106,18 +137,18 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
         title: "Max depth reached",
       }
       if (useDepthRendering) {
-        node.level = maxDepth + 1;
+        node.level = issue.depth + 1;
       }
       nodes.push(node);
       // @ts-ignore
       edges.push({
         from: issue.id,
-        to: unknownId,
+        to: unknownLinksNodeId,
         arrows: {
           to: {
             enabled: true,
             scaleFactor: 0.5,
-            type: "vee",
+            type: "normal",
           },
           from: {
             enabled: false,
@@ -128,15 +159,17 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
         dashes: true,
       });
     });
+  */
   return {nodes, edges};
 };
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, fieldInfo, maxNodeWidth, maxDepth, useHierarchicalLayout, useDepthRendering, setSelectedNode }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, selectedIssueId, fieldInfo, maxNodeWidth, useHierarchicalLayout, useDepthRendering, setSelectedNode, onOpenNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
-      const { nodes, edges } = getGraphObjects(issues, fieldInfo, useDepthRendering, maxDepth);
+      console.log(`Rendering graph with ${Object.keys(issues).length} nodes`);
+      const { nodes, edges } = getGraphObjects(issues, fieldInfo, useDepthRendering);
       const nodesDataSet = new DataSet(nodes);
       // @ts-ignore
       const edgesDataSet = new DataSet(edges);
@@ -159,8 +192,26 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, fiel
         autoResize: true,
         nodes: {
           shape: "box",
+          labelHighlightBold: false,
           font: {
+            multi: "html",
             size: 12,
+            bold: {
+              size: 12,
+              face: FONT_FAMILY,
+            },
+            ital: {
+              size: 12,
+              face: FONT_FAMILY,
+            },
+            boldital: {
+              size: 12,
+              face: FONT_FAMILY,
+            },
+            mono: {
+              size: 12,
+              face: FONT_FAMILY_MONOSPACE,
+            }
           },
           widthConstraint: {
             maximum: maxNodeWidth,
@@ -195,22 +246,29 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, fiel
 
       // @ts-ignore
       let network = new Network(containerRef.current, data, options);
-      const rootNode = Object.values(issues).find((issue) => issue.depth === 0);
-      if (rootNode) {
-        network.selectNodes([rootNode.id]);
-        setSelectedNode(rootNode.id);
+      const selectedNode = (selectedIssueId != null && (selectedIssueId in issues)) ? issues[selectedIssueId] : Object.values(issues).find((issue) => issue.depth === 0);
+      if (selectedNode) {
+        network.selectNodes([selectedNode.id]);
+        setSelectedNode(selectedNode.id);
       }
 
-      network.on('click', (params) => {
+      network.on('selectNode', (params) => {
         const nodes = params.nodes;
         if (nodes.length > 0) {
+          console.log(`Selecting node: ${nodes[0]}`);
           setSelectedNode(nodes[0]);
         }
       });
-
+      network.on('doubleClick', (params) => {
+        const nodes = params.nodes;
+        if (nodes.length > 0) {
+          console.log(`Opening node: ${nodes[0]}`);
+          onOpenNode(nodes[0]);
+        }
+      });
       network;
     }
-  }, [issues, setSelectedNode]);
+  }, [issues, fieldInfo, useDepthRendering, maxNodeWidth, useHierarchicalLayout]);
 
   return <div ref={containerRef} style={{ height }} />;
 };
