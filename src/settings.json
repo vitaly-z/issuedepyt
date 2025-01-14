@@ -20,6 +20,22 @@
             "minLength": 1,
             "x-scope": "PROJECT"
         },
+        "upstreamRelations": {
+            "type": "string",
+            "title": "Upstream relations given as a comma-separated list of direction:type items",
+            "description": "An upstream ticket is a ticket that is needed for the current ticket. Each relation is specified as direction:type. Using this notation the depends on relation is inward:depend and the parent for is outward:subtask.",
+            "default": "outward:subtask,inward:depend",
+            "minLength": 1,
+            "x-scope": "PROJECT"
+        },
+        "downstreamRelations": {
+            "type": "string",
+            "title": "Downstream relations given as a comma-separated list of direction:type items",
+            "description": "A downstream ticket is a ticket that is needs the current ticket. Each relation is specified as direction:type. Using this notation the is required for relation is outward:depend and the subtask of is inward:subtask.",
+            "default": "inward:subtask,outward:depend",
+            "minLength": 1,
+            "x-scope": "PROJECT"
+        },
         "autoLoadDeps": {
             "type": "boolean",
             "title": "Automatically load issue dependencies",
@@ -36,6 +52,6 @@
         }
     },
     "required":[
-        "stateField", "assigneeField"
+        "stateField", "assigneeField", "upstreamRelations", "downstreamRelations"
     ]
 }

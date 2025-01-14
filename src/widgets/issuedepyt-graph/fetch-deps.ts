@@ -1,7 +1,7 @@
 import type {HostAPI} from '../../../@types/globals';
 import type {Settings} from '../../../@types/settings';
 import type {FieldInfo, FieldInfoField} from '../../../@types/field-info';
-import type {IssueInfo} from './issue-types';
+import type {IssueInfo, IssueLink, Relations} from './issue-types';
 
 async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
   const fields = `
@@ -43,9 +43,6 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   return issue;
 }
 
-const LINK_DEPENDS_ON = ["INWARD", "Depend"];
-const LINK_SUBTASK = ["OUTWARD", "Subtask"];
-
 const getCustomField = (name: string | undefined, fields: Array<{name: string, value: any}>): any => {
   if (name === undefined) {
     return null;
@@ -59,21 +56,40 @@ const getCustomFieldValue = (name: string | undefined, fields: Array<{name: stri
   return field ? field.value : null;
 };
 
-async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, maxDepth: number, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
+async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, maxDepth: number, relations: Relations, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
   if (depth == (maxDepth + 1)) {
     return;
   }
 
   const links = await fetchIssueLinks(host, issueID);
 
+  /*
+  For a directed relation:
+
+    +--------+                       +--------+
+    | source |---------------------->| target |
+    +--------+                       +--------+
+         <inward name>       <outward name>
+
+  The source ticket relates to the target as: source --"inward name"---> target.
+  The target ticket relates to the source as: target --"outward name"--> source.
+
+  Examples:
+  Source ---subtask-of--> Target
+  Target ---parent-for--> Source
+
+  Source ---depends-on-------> Target
+  Target ---is-required-for--> Source
+
+  */
   const followLinks = [
-    LINK_DEPENDS_ON,
-    LINK_SUBTASK,
+    ...relations.upstream.map((relation) => [relation.direction, relation.type]),
+    ...relations.downstream.map((relation) => [relation.direction, relation.type]),
   ];
 
   const linksToFollow = links.filter((link: any) => {
     return followLinks.some(([direction, type]) => 
-      link.direction === direction && link.linkType.name === type
+      link.direction === direction && link.linkType.name.toLowerCase() === type.toLowerCase()
     );
   });
 
@@ -86,6 +102,7 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)?.name,
       resolved: issue.resolved,
       direction: link.direction,
+      linkType: link.linkType.name,
       targetToSource: link.linkType.targetToSource,
       sourceToTarget: link.linkType.sourceToTarget,
       relation: link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
@@ -96,9 +113,10 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
   for (let link of linksFlat) {
     issues[issueID].links.push({
       targetId: link.id,
+      type: link.typeType,
+      direction: link.direction,
       targetToSource: link.targetToSource,
       sourceToTarget: link.sourceToTarget,
-      direction: link.direction,
     });
   }
 
@@ -124,7 +142,15 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
   // Links are now fetched and known.
   issues[issueID].linksKnown = true;
 
-  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth + 1, maxDepth, settings, issues));
+  // Remove duplicate links from issue if they already existed.
+  issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
+    const target = issues[sourceLink.targetId];
+    const targetHasSameLink = -1 !== target.links.findIndex((targetLink: IssueLink) =>
+      targetLink.targetId === issueID && targetLink.type === sourceLink.type);
+    return !targetHasSameLink;
+  });
+
+  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth + 1, maxDepth, relations, settings, issues));
   await Promise.all(promises);
   return;
 };
@@ -162,16 +188,16 @@ export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings
   return {issue, fieldInfo};
 };
 
-export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: number, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: number, relations: Relations, settings: Settings): Promise<{[key: string]: IssueInfo}> {
   let issues = {
     [issue.id]: issue,
   }
-  await fetchDepsRecursive(host, issue.id, 1, maxDepth, settings, issues);
+  await fetchDepsRecursive(host, issue.id, 1, maxDepth, relations, settings, issues);
 
   return issues;
 }
 
-export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues: {[key: string]: IssueInfo}, maxDepth: number, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues: {[key: string]: IssueInfo}, maxDepth: number, relations: Relations, settings: Settings): Promise<{[key: string]: IssueInfo}> {
   if (!(issueId in issues)) {
     console.log(`Failed to fetch issues for ${issueId}: issue unknown`);
     return issues;
@@ -182,7 +208,7 @@ export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues:
   const newIssues = Object.assign({}, issues);
   const depsDepth = issue.depth + 1;
   const newMaxDepth = Math.max(maxDepth, depsDepth);
-  await fetchDepsRecursive(host, issueId, issue.depth + 1, newMaxDepth, settings, newIssues);
+  await fetchDepsRecursive(host, issueId, issue.depth + 1, newMaxDepth, relations, settings, newIssues);
 
   return newIssues;
 }

@@ -101,22 +101,14 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
     return node;
   });
   let edges = Object.values(issues).flatMap((issue: IssueInfo) => (issue.links.map((link: IssueLink) => ({
-    to: link.targetId,
     from: issue.id,
+    to: link.targetId,
     label: link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
     arrows: {
-      to: {
-        enabled: true,
-        scaleFactor: 0.5,
-        type: "normal",
-      },
       from: {
-        enabled: link.sourceToTarget == "parent for",
-        scaleFactor: 0.5,
-        type: "diamond",
+        enabled: link.direction == "OUTWARD" && link.type == "Subtask"
       },
     },
-    dashes: false,
   }))));
 
   // Add nodes when links unknown.
@@ -229,7 +221,19 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, sele
             highlight: '#848484',
             hover: '#848484',
             opacity: 1,
-          }
+          },
+          arrows: {
+            from: {
+              enabled: false,
+              scaleFactor: 0.7,
+              type: "diamond",
+            },
+            to: {
+              enabled: true,
+              scaleFactor: 0.7,
+              type: "normal",
+            },
+          },
         },
         interaction: {
           navigationButtons: true,

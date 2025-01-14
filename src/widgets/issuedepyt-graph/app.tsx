@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Checkbox from '@jetbrains/ring-ui-built/components/checkbox/checkbox';
+import DropdownMenu from '@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu';
 import { Tabs, Tab, CustomItem } from "@jetbrains/ring-ui-built/components/tabs/tabs";
 import Text from '@jetbrains/ring-ui-built/components/text/text';
 import Theme, { ThemeProvider } from "@jetbrains/ring-ui-built/components/global/theme";
@@ -10,7 +11,7 @@ import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
 import type { FieldInfo } from "../../../@types/field-info";
 import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
-import type { IssueInfo } from "./issue-types";
+import type { IssueInfo, Relation, Relations, DirectionType } from "./issue-types";
 import DepGraph from "./dep-graph";
 import IssueInfoCard from "./issue-info-card";
 import SettingsPane from "./settings-pane";
@@ -23,6 +24,7 @@ const DEFAULT_MAX_DEPTH = 5;
 const DEFAULT_MAX_NODE_WIDTH = 200;
 const DEFAULT_USE_HIERARCHICAL_LAYOUT = false;
 const DEFAULT_USE_DEPTH_RENDERING = true;
+
 type GRAPH_SIZE_KEY = "tiny" | "small" | "medium" | "large";
 type GRAPH_SIZE_ITEM = {
   height: number;
@@ -80,8 +82,25 @@ const getGraphHeight = (sizeKey: GRAPH_SIZE_KEY): string => {
   return `${GRAPH_SIZE[sizeKey].height}px`;
 };
 
+const parseRelationList = (relations: string | undefined): Array<Relation> => {
+  if (relations === undefined) {
+    return [];
+  }
+  return relations.split(",").map((relation: string) => {
+    const [direction, type] = relation.split(":");
+    return {direction: direction.trim().toUpperCase() as DirectionType, type: type.trim()};
+  });
+};
+
+const getRelations = (settings: Settings): Relations | null => {
+  const upstream = parseRelationList(settings?.upstreamRelations);
+  const downstream = parseRelationList(settings?.downstreamRelations);
+  return {upstream, downstream};
+}
+
 const AppComponent: React.FunctionComponent = () => {
   const [settings, setSettings] = useState<Settings>({});
+  const [relations, setRelations] = useState<Relations>({upstream: [], downstream: []});
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState<string>("main");
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -89,14 +108,22 @@ const AppComponent: React.FunctionComponent = () => {
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(DEFAULT_USE_HIERARCHICAL_LAYOUT);
   const [useDepthRendering, setUseDepthRendering] = useState<boolean>(DEFAULT_USE_DEPTH_RENDERING);
+  const [followUpstream, setFollowUpstream] = useState<boolean>(true);
+  const [followDownstream, setFollowDownstream] = useState<boolean>(false);
   const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
   const [issueData, setIssueData] = useState<{ [key: string]: IssueInfo }>({});
+
+  const filterRelations = (relations: Relations, followUp: boolean, followDown: boolean): Relations => ({
+    upstream: followUp ? relations.upstream : [],
+    downstream: followDown ? relations.downstream : [],
+  });
 
   const refreshData = async () => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issue.id}...`);
       const {"issue": issueInfo, "fieldInfo": fieldInfoData} = await fetchIssueAndInfo(host, issue.id, settings);
-      const issues = await fetchDeps(host, issueInfo, maxDepth, settings);
+      const filteredRelations = filterRelations(relations, followUpstream, followDownstream);
+      const issues = await fetchDeps(host, issueInfo, maxDepth, filteredRelations, settings);
       setFieldInfo(fieldInfoData);
       setIssueData(issues);
     } else {
@@ -107,13 +134,10 @@ const AppComponent: React.FunctionComponent = () => {
   const loadIssueDeps = async (issueId: string) => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issueId}...`);
-      const issues = await fetchDepsAndExtend(host, issueId, issueData, maxDepth, settings);
+      const filteredRelations = filterRelations(relations, followUpstream, followDownstream);
+      const issues = await fetchDepsAndExtend(host, issueId, issueData, maxDepth, filteredRelations, settings);
       setIssueData(issues);
     }
-  };
-
-  const incMaxDepth = () => {
-    setMaxDepth((x) => x + 1);
   };
 
   const isSelectedNodeAnIssue = (nodeId: string | null): boolean => {
@@ -149,6 +173,11 @@ const AppComponent: React.FunctionComponent = () => {
       console.log("Got settings", newSettings);
       setSettings(newSettings);
 
+      const newRelations = getRelations(newSettings);
+      if (newRelations) {
+        setRelations(newRelations);
+      }
+
       if (newSettings?.useHierarchicalLayout != undefined) {
         setUseHierarchicalLayout(newSettings.useHierarchicalLayout);
       }
@@ -157,7 +186,7 @@ const AppComponent: React.FunctionComponent = () => {
 
   useEffect(() => {
     refreshData();
-  }, [host, issue, graphVisible, maxDepth, settings]);
+  }, [host, issue, graphVisible, maxDepth, relations, settings]);
 
   return (
     <div className="widget">
@@ -202,10 +231,28 @@ const AppComponent: React.FunctionComponent = () => {
               <Button onClick={refreshData} icon={UpdateIcon}>
                 Refresh
               </Button>
-              <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
-              {useHierarchicalLayout && (
-                <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
-              )}
+              <DropdownMenu
+                anchor={"Options"}
+                data={[{
+                  rgItemType: DropdownMenu.ListProps.Type.TITLE,
+                  label: "Layout options",
+                }, {
+                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                  template: <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
+                }, {
+                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                  template: <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
+                }, {
+                  rgItemType: DropdownMenu.ListProps.Type.TITLE,
+                  label: "Follow direction options",
+                }, {
+                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                  template: <Checkbox label="Follow upstream relations" checked={followUpstream} onChange={(e: any) => setFollowUpstream(e.target.checked)} />
+                }, {
+                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                  template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
+                }]}
+              />
               <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
               <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
             </CustomItem>
