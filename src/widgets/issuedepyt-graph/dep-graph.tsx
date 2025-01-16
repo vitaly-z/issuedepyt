@@ -231,7 +231,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, sele
             to: {
               enabled: true,
               scaleFactor: 0.7,
-              type: "normal",
+              type: "arrow",
             },
           },
         },
