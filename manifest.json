@@ -3,6 +3,8 @@
   "title": "Issue Dependencies",
   "description": "Visualize issue dependencies.",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
+  "version": "0.0.1",
+  "changeNotes": "Version 0.0.1: Initial version.",
   "vendor": {
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
@@ -12,7 +14,7 @@
 
     {
       "key": "issuedepyt-graph",
-      "name": "Issue Dependency Graph",
+      "name": "Issue dependencies",
       "indexPath": "issuedepyt-graph/index.html",
       "extensionPoint": "ISSUE_ABOVE_ACTIVITY_STREAM",
       "iconPath": "issuedepyt-graph/widget-icon.svg",
