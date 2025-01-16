@@ -233,15 +233,21 @@ const AppComponent: React.FunctionComponent = () => {
                 template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
               }]}
             />
-            <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
-            <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
-            {loading && (
-              <LoaderInline>
-                <Text size={Text.Size.S} info>
-                  Loading...
-                </Text>
-              </LoaderInline>
-            )}
+            <div style={{float: "right"}}>
+              {!loading && (
+                <Group>
+                  <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
+                  <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
+                </Group>
+              )}
+              {loading && (
+                <LoaderInline>
+                  <Text size={Text.Size.S} info>
+                    Loading...
+                  </Text>
+                </LoaderInline>
+              )}
+            </div>
           </Group>
           {Object.keys(issueData).length > 0 && (
             <DepGraph
