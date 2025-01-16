@@ -1,10 +1,10 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
+import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from '@jetbrains/ring-ui-built/components/checkbox/checkbox';
 import DropdownMenu from '@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu';
-import { Tabs, Tab, CustomItem } from "@jetbrains/ring-ui-built/components/tabs/tabs";
+import Input from '@jetbrains/ring-ui-built/components/input/input';
 import Text from '@jetbrains/ring-ui-built/components/text/text';
-import Theme, { ThemeProvider } from "@jetbrains/ring-ui-built/components/global/theme";
 import LoaderInline from '@jetbrains/ring-ui-built/components/loader-inline/loader-inline';
 import UpdateIcon from "@jetbrains/icons/update";
 import type { HostAPI } from "../../../@types/globals";
@@ -14,7 +14,6 @@ import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
 import type { IssueInfo, Relation, Relations, DirectionType } from "./issue-types";
 import DepGraph from "./dep-graph";
 import IssueInfoCard from "./issue-info-card";
-import SettingsPane from "./settings-pane";
 
 // Register widget in YouTrack. To learn more, see https://www.jetbrains.com/help/youtrack/devportal-apps/apps-host-api.html
 const host: HostAPI = await YTApp.register();
@@ -99,10 +98,10 @@ const getRelations = (settings: Settings): Relations | null => {
 }
 
 const AppComponent: React.FunctionComponent = () => {
+  const [loading, setLoading] = useState<boolean>(true);
   const [settings, setSettings] = useState<Settings>({});
   const [relations, setRelations] = useState<Relations>({upstream: [], downstream: []});
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
-  const [selectedTab, setSelectedTab] = useState<string>("main");
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
@@ -120,12 +119,14 @@ const AppComponent: React.FunctionComponent = () => {
 
   const refreshData = async () => {
     if (graphVisible) {
+      setLoading(true);
       console.log(`Fetching deps for ${issue.id}...`);
       const {"issue": issueInfo, "fieldInfo": fieldInfoData} = await fetchIssueAndInfo(host, issue.id, settings);
       const filteredRelations = filterRelations(relations, followUpstream, followDownstream);
       const issues = await fetchDeps(host, issueInfo, maxDepth, filteredRelations, settings);
       setFieldInfo(fieldInfoData);
       setIssueData(issues);
+      setLoading(false);
     } else {
       console.log("Not fetching deps, graph is not visible.");
     }
@@ -134,9 +135,11 @@ const AppComponent: React.FunctionComponent = () => {
   const loadIssueDeps = async (issueId: string) => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issueId}...`);
+      setLoading(true);
       const filteredRelations = filterRelations(relations, followUpstream, followDownstream);
       const issues = await fetchDepsAndExtend(host, issueId, issueData, maxDepth, filteredRelations, settings);
       setIssueData(issues);
+      setLoading(false);
     }
   };
 
@@ -190,75 +193,74 @@ const AppComponent: React.FunctionComponent = () => {
 
   return (
     <div className="widget">
-      <ThemeProvider theme={Theme.AUTO}>
-        {!graphVisible && (
-          <Button onClick={() => setGraphVisible(value => !value)}>
-            Load graph...
-          </Button>
-        )}
-        {graphVisible && (
-          <Tabs selected={selectedTab} onSelect={setSelectedTab}>
-            <Tab id="main" title="Graph">
-              {Object.keys(issueData).length == 0 && (
-                <LoaderInline />
-              )}
-              {Object.keys(issueData).length > 0 && (
-                <DepGraph
-                  height={getGraphHeight(getGraphSizeKey(issueData))}
-                  issues={issueData}
-                  selectedIssueId={selectedNode}
-                  fieldInfo={fieldInfo}
-                  maxNodeWidth={maxNodeWidth}
-                  useHierarchicalLayout={useHierarchicalLayout}
-                  useDepthRendering={useDepthRendering}
-                  setSelectedNode={setSelectedNode}
-                  onOpenNode={openNode}
-                />
-              )}
-              {graphVisible && selectedNode !== null && isSelectedNodeAnIssue(selectedNode) && (
-                <IssueInfoCard issue={issueData[selectedNode]} />
-              )}
-            </Tab>
-            <Tab id="settings" title="Settings">
-              <SettingsPane
-                maxDepth={maxDepth}
-                setMaxDepth={setMaxDepth}
-                maxNodeWidth={maxNodeWidth}
-                setMaxNodeWidth={setMaxNodeWidth}
-              />
-            </Tab>
-            <CustomItem>
-              <Button onClick={refreshData} icon={UpdateIcon}>
-                Refresh
-              </Button>
-              <DropdownMenu
-                anchor={"Options"}
-                data={[{
-                  rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                  label: "Layout options",
-                }, {
-                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                  template: <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
-                }, {
-                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                  template: <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
-                }, {
-                  rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                  label: "Follow direction options",
-                }, {
-                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                  template: <Checkbox label="Follow upstream relations" checked={followUpstream} onChange={(e: any) => setFollowUpstream(e.target.checked)} />
-                }, {
-                  rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                  template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
-                }]}
-              />
-              <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
-              <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
-            </CustomItem>
-          </Tabs>
-        )}
-      </ThemeProvider>
+      {!graphVisible && (<div>
+        <Button onClick={() => setGraphVisible(value => !value)}>
+          Load graph...
+        </Button>
+        </div>
+      )}
+      {graphVisible && (
+        <div>
+          <Group>
+            <Button onClick={refreshData} icon={UpdateIcon}>
+              Reload
+            </Button>
+            <DropdownMenu
+              anchor={<Button dropdown inline>Options</Button>}
+              data={[{
+                rgItemType: DropdownMenu.ListProps.Type.TITLE,
+                label: "Layout options",
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                template: <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                template: <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                template: <Input type="number" label="Max depth" value={maxDepth} onChange={(e: any) => setMaxDepth(Number(e.target.value))} />
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                template: <Input type="number" label="Max node width" value={maxNodeWidth} onChange={(e: any) => setMaxNodeWidth(Number(e.target.value))} />
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.TITLE,
+                label: "Follow direction options",
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                template: <Checkbox label="Follow upstream relations" checked={followUpstream} onChange={(e: any) => setFollowUpstream(e.target.checked)} />
+              }, {
+                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
+              }]}
+            />
+            <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
+            <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
+            {loading && (
+              <LoaderInline>
+                <Text size={Text.Size.S} info>
+                  Loading...
+                </Text>
+              </LoaderInline>
+            )}
+          </Group>
+          {Object.keys(issueData).length > 0 && (
+            <DepGraph
+              height={getGraphHeight(getGraphSizeKey(issueData))}
+              issues={issueData}
+              selectedIssueId={selectedNode}
+              fieldInfo={fieldInfo}
+              maxNodeWidth={maxNodeWidth}
+              useHierarchicalLayout={useHierarchicalLayout}
+              useDepthRendering={useDepthRendering}
+              setSelectedNode={setSelectedNode}
+              onOpenNode={openNode}
+            />
+          )}
+          {selectedNode !== null && isSelectedNodeAnIssue(selectedNode) && (
+            <IssueInfoCard issue={issueData[selectedNode]} />
+          )}
+        </div>
+      )}
     </div>
   );
 };
