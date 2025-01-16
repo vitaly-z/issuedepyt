@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
+import ButtonGroup from "@jetbrains/ring-ui-built/components/button-group/button-group";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from '@jetbrains/ring-ui-built/components/checkbox/checkbox';
 import DropdownMenu from '@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu';
@@ -7,6 +8,8 @@ import Input from '@jetbrains/ring-ui-built/components/input/input';
 import Text from '@jetbrains/ring-ui-built/components/text/text';
 import LoaderInline from '@jetbrains/ring-ui-built/components/loader-inline/loader-inline';
 import UpdateIcon from "@jetbrains/icons/update";
+import UpstreamIcon from "@jetbrains/icons/arrow-up";
+import DownstreamIcon from "@jetbrains/icons/arrow-down";
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
 import type { FieldInfo } from "../../../@types/field-info";
@@ -24,6 +27,7 @@ const DEFAULT_MAX_NODE_WIDTH = 200;
 const DEFAULT_USE_HIERARCHICAL_LAYOUT = false;
 const DEFAULT_USE_DEPTH_RENDERING = true;
 
+type FollowDirection = "upstream" | "downstream";
 type GRAPH_SIZE_KEY = "tiny" | "small" | "medium" | "large";
 type GRAPH_SIZE_ITEM = {
   height: number;
@@ -132,11 +136,13 @@ const AppComponent: React.FunctionComponent = () => {
     }
   };
 
-  const loadIssueDeps = async (issueId: string) => {
+  const loadIssueDeps = async (issueId: string, direction: FollowDirection | null = null) => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issueId}...`);
       setLoading(true);
-      const filteredRelations = filterRelations(relations, followUpstream, followDownstream);
+      const followUp = (direction === "upstream") || followUpstream;
+      const followDown = (direction === "downstream") || followDownstream;
+      const filteredRelations = filterRelations(relations, followUp, followDown);
       const issues = await fetchDepsAndExtend(host, issueId, issueData, maxDepth, filteredRelations, settings);
       setIssueData(issues);
       setLoading(false);
@@ -193,10 +199,11 @@ const AppComponent: React.FunctionComponent = () => {
 
   return (
     <div className="widget">
-      {!graphVisible && (<div>
-        <Button onClick={() => setGraphVisible(value => !value)}>
-          Load graph...
-        </Button>
+      {!graphVisible && (
+        <div>
+          <Button onClick={() => setGraphVisible(value => !value)}>
+            Load graph...
+          </Button>
         </div>
       )}
       {graphVisible && (
@@ -233,6 +240,23 @@ const AppComponent: React.FunctionComponent = () => {
                 template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
               }]}
             />
+            {selectedNode !== null && (selectedNode in issueData) && (
+              <Group className="extra-margin-left">
+                <Button href={`/issue/${selectedNode}`}>
+                  Open {selectedNode}
+                </Button>
+                {!issueData[selectedNode].linksKnown && (
+                  <Group className="extra-margin-left">
+                    <Button onClick={() => loadIssueDeps(selectedNode, "upstream")} icon={UpstreamIcon}>
+                      Load upstream
+                    </Button>
+                    <Button onClick={() => loadIssueDeps(selectedNode, "downstream")} icon={DownstreamIcon}>
+                      Load downstream
+                    </Button>
+                  </Group>
+                )}
+              </Group>
+            )}
             <div style={{float: "right"}}>
               {!loading && (
                 <Group>
