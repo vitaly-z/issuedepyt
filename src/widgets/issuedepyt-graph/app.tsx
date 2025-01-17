@@ -209,39 +209,15 @@ const AppComponent: React.FunctionComponent = () => {
       {graphVisible && (
         <div>
           <Group>
-            <Button onClick={refreshData} icon={UpdateIcon}>
-              Reload
-            </Button>
-            <DropdownMenu
-              anchor={<Button dropdown inline>Options</Button>}
-              data={[{
-                rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                label: "Layout options",
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                template: <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                template: <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                template: <Input type="number" label="Max depth" value={maxDepth} onChange={(e: any) => setMaxDepth(Number(e.target.value))} />
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                template: <Input type="number" label="Max node width" value={maxNodeWidth} onChange={(e: any) => setMaxNodeWidth(Number(e.target.value))} />
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                label: "Follow direction options",
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                template: <Checkbox label="Follow upstream relations" checked={followUpstream} onChange={(e: any) => setFollowUpstream(e.target.checked)} />
-              }, {
-                rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
-              }]}
-            />
+            {loading && (
+              <LoaderInline>
+                <Text size={Text.Size.S} info>
+                  Loading...
+                </Text>
+              </LoaderInline>
+            )}
             {selectedNode !== null && (selectedNode in issueData) && (
-              <Group className="extra-margin-left">
+              <Group>
                 <Button href={`/issue/${selectedNode}`}>
                   Open {selectedNode}
                 </Button>
@@ -258,19 +234,45 @@ const AppComponent: React.FunctionComponent = () => {
               </Group>
             )}
             <div style={{float: "right"}}>
-              {!loading && (
-                <Group>
-                  <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
-                  <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
-                </Group>
-              )}
-              {loading && (
-                <LoaderInline>
-                  <Text size={Text.Size.S} info>
-                    Loading...
-                  </Text>
-                </LoaderInline>
-              )}
+              <Group>
+                {!loading && (
+                  <Group>
+                    <Text size={Text.Size.S} info>Nodes: {getNumIssues(issueData)}.</Text>
+                    <Text size={Text.Size.S} info>Depth: {getMaxDepth(issueData)}.</Text>
+                  </Group>
+                )}
+                <Button onClick={refreshData} icon={UpdateIcon}>
+                  Reload
+                </Button>
+                <DropdownMenu
+                  anchor={<Button dropdown inline>Options</Button>}
+                  data={[{
+                    rgItemType: DropdownMenu.ListProps.Type.TITLE,
+                    label: "Layout options",
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                    template: <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                    template: <Checkbox label="Strict depth layout" checked={useDepthRendering} onChange={(e: any) => setUseDepthRendering(e.target.checked)} />
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                    template: <Input type="number" label="Max depth" value={maxDepth} onChange={(e: any) => setMaxDepth(Number(e.target.value))} />
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                    template: <Input type="number" label="Max node width" value={maxNodeWidth} onChange={(e: any) => setMaxNodeWidth(Number(e.target.value))} />
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.TITLE,
+                    label: "Follow direction options",
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                    template: <Checkbox label="Follow upstream relations" checked={followUpstream} onChange={(e: any) => setFollowUpstream(e.target.checked)} />
+                  }, {
+                    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+                    template: <Checkbox label="Follow downstream relations" checked={followDownstream} onChange={(e: any) => setFollowDownstream(e.target.checked)} />
+                  }]}
+                />
+              </Group>
             </div>
           </Group>
           {Object.keys(issueData).length > 0 && (
