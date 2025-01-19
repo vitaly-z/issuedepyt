@@ -1,7 +1,10 @@
 import type {HostAPI} from '../../../@types/globals';
 import type {Settings} from '../../../@types/settings';
 import type {FieldInfo, FieldInfoField} from '../../../@types/field-info';
-import type {IssueInfo, IssueLink, Relations} from './issue-types';
+import type {IssueInfo, IssueLink, Relation, Relations} from './issue-types';
+
+export type FollowDirection = "upstream" | "downstream";
+export type FollowDirections = Array<FollowDirection>;
 
 async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
   const fields = `
@@ -56,12 +59,15 @@ const getCustomFieldValue = (name: string | undefined, fields: Array<{name: stri
   return field ? field.value : null;
 };
 
-async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, maxDepth: number, relations: Relations, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
+async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, maxDepth: number, relations: Relations, followDirs: FollowDirections, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
   if (depth == (maxDepth + 1)) {
     return;
   }
 
   const links = await fetchIssueLinks(host, issueID);
+  const issue = issues[issueID];
+  const prevIssueUpstreamLinks = [...issue.upstreamLinks];
+  const prevIssueDownstreamLinks = [...issue.downstreamLinks];
 
   /*
   For a directed relation:
@@ -82,14 +88,10 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
   Target ---is-required-for--> Source
 
   */
-  const followLinks = [
-    ...relations.upstream.map((relation) => [relation.direction, relation.type]),
-    ...relations.downstream.map((relation) => [relation.direction, relation.type]),
-  ];
-
+  const followLinks = [...relations.upstream, ...relations.downstream];
   const linksToFollow = links.filter((link: any) => {
-    return followLinks.some(([direction, type]) => 
-      link.direction === direction && link.linkType.name.toLowerCase() === type.toLowerCase()
+    return followLinks.some((relation) => 
+      link.direction === relation.direction && link.linkType.name.toLowerCase() === relation.type.toLowerCase()
     );
   });
 
@@ -109,20 +111,24 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       depth: depth,
     }))
   );
-
-  for (let link of linksFlat) {
-    issues[issueID].links.push({
+  for (const link of linksFlat) {
+    const isUpstream = relations.upstream.some((relation) =>
+      link.direction === relation.direction && link.linkType.toLowerCase() === relation.type.toLowerCase()
+    );
+    const linksList = isUpstream ? issue.upstreamLinks : issue.downstreamLinks;
+    if (linksList.some((x) => link.id === x.targetId && link.direction === x.direction && link.linkType === x.type)) {
+      continue;
+    }
+    linksList.push({
       targetId: link.id,
-      type: link.typeType,
+      type: link.linkType,
       direction: link.direction,
       targetToSource: link.targetToSource,
       sourceToTarget: link.sourceToTarget,
     });
   }
 
-  const linksToFetch = linksFlat.filter((link: any) => !(link.id in issues));
-
-  for (let link of linksFlat) {
+  for (const link of linksFlat) {
     if (link.id in issues) {
       continue;
     }
@@ -134,23 +140,29 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
       assignee: link.assignee,
       resolved: link.resolved,
       depth: link.depth,
-      links: [],
+      upstreamLinks: [],
+      downstreamLinks: [],
       linksKnown: false,
     };
   }
 
-  // Links are now fetched and known.
-  issues[issueID].linksKnown = true;
+  issue.linksKnown = true;
 
-  // Remove duplicate links from issue if they already existed.
-  issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
-    const target = issues[sourceLink.targetId];
-    const targetHasSameLink = -1 !== target.links.findIndex((targetLink: IssueLink) =>
-      targetLink.targetId === issueID && targetLink.type === sourceLink.type);
-    return !targetHasSameLink;
-  });
-
-  const promises = linksToFetch.map((link: any) => fetchDepsRecursive(host, link.id, depth + 1, maxDepth, relations, settings, issues));
+  const isSameLink = (a: IssueLink, b: IssueLink) => a.targetId === b.targetId && a.direction === b.direction && a.type === b.type;
+  const idsToFetch: Array<string> = [];
+  if (followDirs.includes("upstream")) {
+    const newLinks = issue.upstreamLinks.filter((link: IssueLink) =>
+      !prevIssueUpstreamLinks.some((x) => isSameLink(x, link))
+    );
+    idsToFetch.push(...newLinks.map((link: IssueLink) => link.targetId));
+  }
+  if (followDirs.includes("downstream")) {
+    const newLinks = issue.downstreamLinks.filter((link: IssueLink) =>
+      !prevIssueDownstreamLinks.some((x) => isSameLink(x, link))
+    );
+    idsToFetch.push(...newLinks.map((link: IssueLink) => link.targetId));
+  }
+  const promises = idsToFetch.map((id: string) => fetchDepsRecursive(host, id, depth + 1, maxDepth, relations, followDirs, settings, issues));
   await Promise.all(promises);
   return;
 };
@@ -181,23 +193,24 @@ export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings
     assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
     resolved: issueInfo.resolved,
     depth: 0,
-    links: [],
+    upstreamLinks: [],
+    downstreamLinks: [],
     linksKnown: false,
   }
 
   return {issue, fieldInfo};
 };
 
-export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: number, relations: Relations, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: number, relations: Relations, followDirs: FollowDirections, settings: Settings): Promise<{[key: string]: IssueInfo}> {
   let issues = {
     [issue.id]: issue,
   }
-  await fetchDepsRecursive(host, issue.id, 1, maxDepth, relations, settings, issues);
+  await fetchDepsRecursive(host, issue.id, 1, maxDepth, relations, followDirs, settings, issues);
 
   return issues;
 }
 
-export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues: {[key: string]: IssueInfo}, maxDepth: number, relations: Relations, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues: {[key: string]: IssueInfo}, maxDepth: number, relations: Relations, followDirs: FollowDirections, settings: Settings): Promise<{[key: string]: IssueInfo}> {
   if (!(issueId in issues)) {
     console.log(`Failed to fetch issues for ${issueId}: issue unknown`);
     return issues;
@@ -208,7 +221,7 @@ export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues:
   const newIssues = Object.assign({}, issues);
   const depsDepth = issue.depth + 1;
   const newMaxDepth = Math.max(maxDepth, depsDepth);
-  await fetchDepsRecursive(host, issueId, issue.depth + 1, newMaxDepth, relations, settings, newIssues);
+  await fetchDepsRecursive(host, issueId, issue.depth + 1, newMaxDepth, relations, followDirs, settings, newIssues);
 
   return newIssues;
 }

@@ -25,31 +25,34 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
   const getRelation = (link: IssueLink) => (link.direction === "OUTWARD" ? link.sourceToTarget : link.targetToSource);
 
   let relationComps = [];
-  if (issue.linksKnown) {
-    const relations = issue.links
-      .map(getRelation)
-      .filter((item, i, ar) => ar.indexOf(item) === i)
-      .sort();
-
-    for (let relation of relations) {
-      let tags = [];
-      for (let link of issue.links) {
-        const linkRelation = getRelation(link);
-        if (linkRelation === relation) {
-          tags.push(<Tag readOnly><Link href={`/issue/${link.targetId}`}>{link.targetId}</Link></Tag>)
-        }
-      }
-      relationComps.push(<p>
-        <Text size={Text.Size.S} info>{relation}</Text>
-        <div children={tags} />
-      </p>);
-    }
-  } else {
+  if (!issue.linksKnown) {
     relationComps.push(<p>
-      <Text size={Text.Size.S} info>Dependencies not loaded.</Text>
+      <Text size={Text.Size.S} info>Relations not loaded.</Text>
     </p>);
-  }
+  } else {
+    for (const item of [["Upstream", issue.upstreamLinks], ["Downstream", issue.downstreamLinks]]) {
+      const direction = item[0] as string;
+      const links = item[1] as Array<IssueLink>;
+      const relations = links
+        .map(getRelation)
+        .filter((item, i, ar) => ar.indexOf(item) === i)
+        .sort();
 
+      for (let relation of relations) {
+        let tags = [];
+        for (let link of links) {
+          const linkRelation = getRelation(link);
+          if (linkRelation === relation) {
+            tags.push(<Tag readOnly><Link href={`/issue/${link.targetId}`}>{link.targetId}</Link></Tag>)
+          }
+        }
+        relationComps.push(<p>
+          <Text size={Text.Size.S} info>{`${relation} (${direction})`}</Text>
+          <div children={tags} />
+        </p>);
+      }
+    }
+  }
   const toggleCollapse = () => setCollapsed(!collapsed);
 
   const collapseControlText = collapsed ? "Expand" : "Collapse";

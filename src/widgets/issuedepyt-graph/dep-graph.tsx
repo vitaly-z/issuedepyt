@@ -50,10 +50,6 @@ const getNodeLabel = (issue: IssueInfo): string => {
   if (flags.length > 0) {
     lines.push(`<code>[${flags.join(", ")}]</code>`);
   }
-  if (!issue.linksKnown) {
-    lines.push("");
-    lines.push("<i>Dependencies unknown!</i>");
-  }
 
   return lines.join("\n");
 };
@@ -71,8 +67,7 @@ const getNodeTooltip = (issue: IssueInfo): string => {
 
   if (!issue.linksKnown) {
     lines.push("");
-    lines.push(`Max depth reached at ${issue.id}!`);
-    lines.push("Double-click to load dependencies.");
+    lines.push("Relations not known.");
   }
 
   return lines.join("\n");
@@ -98,9 +93,14 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       node.borderWidth = 2;
       node.borderWidthSelected = 3;
     }
+    if (!issue.linksKnown) {
+      node.shapeProperties = {
+        borderDashes: [5, 5],
+      }
+    }
     return node;
   });
-  let edges = Object.values(issues).flatMap((issue: IssueInfo) => (issue.links.map((link: IssueLink) => ({
+  let edges = Object.values(issues).flatMap((issue: IssueInfo) => ([...issue.upstreamLinks, ...issue.downstreamLinks].map((link: IssueLink) => ({
     from: issue.id,
     to: link.targetId,
     label: link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
@@ -110,6 +110,14 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       },
     },
   }))));
+  // Remove duplicate links from issue if they already existed.
+  /*issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
+    const target = issues[sourceLink.targetId];
+    const targetHasSameLink = -1 !== target.links.findIndex((targetLink: IssueLink) =>
+      targetLink.targetId === issueID && targetLink.type === sourceLink.type);
+    return !targetHasSameLink;
+  });*/
+
 
   // Add nodes when links unknown.
   /*

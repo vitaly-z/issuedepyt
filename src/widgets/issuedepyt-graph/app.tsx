@@ -8,12 +8,12 @@ import Input from '@jetbrains/ring-ui-built/components/input/input';
 import Text from '@jetbrains/ring-ui-built/components/text/text';
 import LoaderInline from '@jetbrains/ring-ui-built/components/loader-inline/loader-inline';
 import UpdateIcon from "@jetbrains/icons/update";
-import UpstreamIcon from "@jetbrains/icons/arrow-up";
-import DownstreamIcon from "@jetbrains/icons/arrow-down";
+import DownloadIcon from "@jetbrains/icons/download";
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
 import type { FieldInfo } from "../../../@types/field-info";
 import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
+import type { FollowDirection, FollowDirections } from "./fetch-deps";
 import type { IssueInfo, Relation, Relations, DirectionType } from "./issue-types";
 import DepGraph from "./dep-graph";
 import IssueInfoCard from "./issue-info-card";
@@ -27,7 +27,6 @@ const DEFAULT_MAX_NODE_WIDTH = 200;
 const DEFAULT_USE_HIERARCHICAL_LAYOUT = false;
 const DEFAULT_USE_DEPTH_RENDERING = true;
 
-type FollowDirection = "upstream" | "downstream";
 type GRAPH_SIZE_KEY = "tiny" | "small" | "medium" | "large";
 type GRAPH_SIZE_ITEM = {
   height: number;
@@ -126,8 +125,14 @@ const AppComponent: React.FunctionComponent = () => {
       setLoading(true);
       console.log(`Fetching deps for ${issue.id}...`);
       const {"issue": issueInfo, "fieldInfo": fieldInfoData} = await fetchIssueAndInfo(host, issue.id, settings);
-      const filteredRelations = filterRelations(relations, followUpstream, followDownstream);
-      const issues = await fetchDeps(host, issueInfo, maxDepth, filteredRelations, settings);
+      const followDirs: FollowDirections = [];
+      if (followUpstream) {
+        followDirs.push("upstream");
+      }
+      if (followDownstream) {
+        followDirs.push("downstream");
+      }
+      const issues = await fetchDeps(host, issueInfo, maxDepth, relations, followDirs, settings);
       setFieldInfo(fieldInfoData);
       setIssueData(issues);
       setLoading(false);
@@ -140,10 +145,14 @@ const AppComponent: React.FunctionComponent = () => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issueId}...`);
       setLoading(true);
-      const followUp = (direction === "upstream") || followUpstream;
-      const followDown = (direction === "downstream") || followDownstream;
-      const filteredRelations = filterRelations(relations, followUp, followDown);
-      const issues = await fetchDepsAndExtend(host, issueId, issueData, maxDepth, filteredRelations, settings);
+      const followDirs: FollowDirections = [];
+      if ((direction === "upstream") || followUpstream) {
+        followDirs.push("upstream");
+      }
+      if ((direction === "downstream") || followDownstream) {
+        followDirs.push("downstream");
+      }
+      const issues = await fetchDepsAndExtend(host, issueId, issueData, maxDepth, relations, followDirs, settings);
       setIssueData(issues);
       setLoading(false);
     }
@@ -157,15 +166,8 @@ const AppComponent: React.FunctionComponent = () => {
   };
 
   const openNode = (nodeId: string) => {
-    if (nodeId.endsWith(":unknownlinks")) {
-      const parentIssueId = nodeId.split(":")[0];
-      loadIssueDeps(parentIssueId);
-    } else if (isSelectedNodeAnIssue(nodeId)) {
-      if (issueData[nodeId].linksKnown) {
-        open(`/issue/${nodeId}`);
-      } else {
-        loadIssueDeps(nodeId);
-      }
+    if (isSelectedNodeAnIssue(nodeId)) {
+      open(`/issue/${nodeId}`);
     }
   };
 
@@ -223,11 +225,8 @@ const AppComponent: React.FunctionComponent = () => {
                 </Button>
                 {!issueData[selectedNode].linksKnown && (
                   <Group className="extra-margin-left">
-                    <Button onClick={() => loadIssueDeps(selectedNode, "upstream")} icon={UpstreamIcon}>
-                      Load upstream
-                    </Button>
-                    <Button onClick={() => loadIssueDeps(selectedNode, "downstream")} icon={DownstreamIcon}>
-                      Load downstream
+                    <Button onClick={() => loadIssueDeps(selectedNode)} icon={DownloadIcon}>
+                      Load relations
                     </Button>
                   </Group>
                 )}
@@ -248,7 +247,7 @@ const AppComponent: React.FunctionComponent = () => {
                   anchor={<Button dropdown inline>Options</Button>}
                   data={[{
                     rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                    label: "Layout options",
+                    label: "Layout",
                   }, {
                     rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
                     template: <Checkbox label="Tree layout" checked={useHierarchicalLayout} onChange={(e: any) => setUseHierarchicalLayout(e.target.checked)} />
@@ -263,7 +262,7 @@ const AppComponent: React.FunctionComponent = () => {
                     template: <Input type="number" label="Max node width" value={maxNodeWidth} onChange={(e: any) => setMaxNodeWidth(Number(e.target.value))} />
                   }, {
                     rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                    label: "Follow direction options",
+                    label: "Follow direction",
                   }, {
                     rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
                     template: <Checkbox label="Follow upstream relations" checked={followUpstream} onChange={(e: any) => setFollowUpstream(e.target.checked)} />

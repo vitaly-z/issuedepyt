@@ -26,6 +26,7 @@ export interface IssueInfo {
   assignee?: string;
   resolved: boolean;
   depth: number;  // Root node has depth 0.
-  links: Array<IssueLink>;
-  linksKnown: boolean;  // Links has been fetched and are known. 
+  upstreamLinks: Array<IssueLink>;
+  downstreamLinks: Array<IssueLink>;
+  linksKnown: boolean;
 };
