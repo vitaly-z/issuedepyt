@@ -29,4 +29,6 @@ export interface IssueInfo {
   upstreamLinks: Array<IssueLink>;
   downstreamLinks: Array<IssueLink>;
   linksKnown: boolean;
+  showUpstream: boolean;
+  showDownstream: boolean;
 }

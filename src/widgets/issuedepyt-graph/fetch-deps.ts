@@ -175,10 +175,18 @@ async function fetchDepsRecursive(
       upstreamLinks: [],
       downstreamLinks: [],
       linksKnown: false,
+      showUpstream: false,
+      showDownstream: false,
     };
   }
 
   issue.linksKnown = true;
+  if (followDirs.includes("upstream")) {
+    issue.showUpstream = true;
+  }
+  if (followDirs.includes("downstream")) {
+    issue.showDownstream = true;
+  }
 
   const isSameLink = (a: IssueLink, b: IssueLink) =>
     a.targetId === b.targetId &&
@@ -259,6 +267,8 @@ export async function fetchIssueAndInfo(
     upstreamLinks: [],
     downstreamLinks: [],
     linksKnown: false,
+    showDownstream: false,
+    showUpstream: false,
   };
 
   return { issue, fieldInfo };

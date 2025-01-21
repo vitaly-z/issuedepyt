@@ -89,49 +89,56 @@ const getGraphObjects = (
   fieldInfo: FieldInfo,
   useDepthRendering: boolean
 ): { nodes: any[]; edges: any[] } => {
-  let nodes = Object.values(issues).map((issue: IssueInfo) => {
-    const colorEntry = getColor(issue.state, fieldInfo?.stateField);
-    const node: { [key: string]: any } = {
-      id: issue.id,
-      label: getNodeLabel(issue),
-      shape: "box",
-      title: getNodeTooltip(issue),
-    };
-    if (useDepthRendering) {
-      node.level = issue.depth;
-    }
-    if (colorEntry) {
-      node.font = { color: colorEntry.fg };
-      node.color = colorEntry.bg;
-    }
-    if (issue.depth == 0) {
-      node.borderWidth = 2;
-      node.borderWidthSelected = 3;
-    }
-    if (!issue.linksKnown) {
-      node.shapeProperties = {
-        borderDashes: [5, 5],
-      };
-    }
-    return node;
-  });
   let edges = Object.values(issues).flatMap((issue: IssueInfo) =>
-    [...issue.upstreamLinks, ...issue.downstreamLinks].map(
-      (link: IssueLink) => ({
-        from: issue.id,
-        to: link.targetId,
-        label:
-          link.direction === "INWARD"
-            ? link.targetToSource
-            : link.sourceToTarget,
-        arrows: {
-          from: {
-            enabled: link.direction == "OUTWARD" && link.type == "Subtask",
-          },
+    [
+      ...(issue.showUpstream ? issue.upstreamLinks : []),
+      ...(issue.showDownstream ? issue.downstreamLinks : []),
+    ].map((link: IssueLink) => ({
+      from: issue.id,
+      to: link.targetId,
+      label:
+        link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
+      arrows: {
+        from: {
+          enabled: link.direction == "OUTWARD" && link.type == "Subtask",
         },
-      })
-    )
+      },
+    }))
   );
+  let nodes = Object.values(issues)
+    // Filter stray nodes without any edges.
+    .filter(
+      (issue: IssueInfo) =>
+        issue.depth === 0 ||
+        edges.some((edge) => edge.from === issue.id || edge.to === issue.id)
+    )
+    // Transform issues to graph nodes.
+    .map((issue: IssueInfo) => {
+      const colorEntry = getColor(issue.state, fieldInfo?.stateField);
+      const node: { [key: string]: any } = {
+        id: issue.id,
+        label: getNodeLabel(issue),
+        shape: "box",
+        title: getNodeTooltip(issue),
+      };
+      if (useDepthRendering) {
+        node.level = issue.depth;
+      }
+      if (colorEntry) {
+        node.font = { color: colorEntry.fg };
+        node.color = colorEntry.bg;
+      }
+      if (issue.depth == 0) {
+        node.borderWidth = 2;
+        node.borderWidthSelected = 3;
+      }
+      if (!issue.linksKnown) {
+        node.shapeProperties = {
+          borderDashes: [5, 5],
+        };
+      }
+      return node;
+    });
   // Remove duplicate links from issue if they already existed.
   /*issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
     const target = issues[sourceLink.targetId];
