@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { DataSet } from 'vis-data/peer/esm/vis-data';
-import { Network } from 'vis-network/standalone/esm/vis-network';
-import type {IssueInfo, IssueLink} from './issue-types';
+import React, { useEffect, useRef } from "react";
+import { DataSet } from "vis-data/peer/esm/vis-data";
+import { Network } from "vis-network/standalone/esm/vis-network";
+import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
-import { COLOR_PALETTE, ColorPaletteItem } from './colors';
+import { COLOR_PALETTE, ColorPaletteItem } from "./colors";
 
 interface DepGraphProps {
   height: string;
@@ -17,13 +17,20 @@ interface DepGraphProps {
   onOpenNode: (nodeId: string) => void;
 }
 
-const FONT_FAMILY = 'system-ui, Arial, sans-serif';
-const FONT_FAMILY_MONOSPACE = 'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
+const FONT_FAMILY = "system-ui, Arial, sans-serif";
+const FONT_FAMILY_MONOSPACE =
+  'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
 
-  const getColor = (state: string | undefined, stateFieldInfo: FieldInfoField | undefined): ColorPaletteItem | undefined => {
+const getColor = (
+  state: string | undefined,
+  stateFieldInfo: FieldInfoField | undefined
+): ColorPaletteItem | undefined => {
   if (stateFieldInfo && state) {
-    const stateKey = Object.keys(stateFieldInfo.values).find(x => x.toLowerCase() === state.toLowerCase());
-    const colorEntry = stateKey != undefined ? stateFieldInfo.values[stateKey] : undefined;
+    const stateKey = Object.keys(stateFieldInfo.values).find(
+      (x) => x.toLowerCase() === state.toLowerCase()
+    );
+    const colorEntry =
+      stateKey != undefined ? stateFieldInfo.values[stateKey] : undefined;
     if (colorEntry) {
       return {
         bg: colorEntry.background,
@@ -46,7 +53,11 @@ const getNodeLabel = (issue: IssueInfo): string => {
   if (issue?.state) {
     flags.push(issue.state);
   }
-  flags.push((issue?.assignee !== undefined && issue.assignee.length > 0) ? "Assigned" : "Unassigned");
+  flags.push(
+    issue?.assignee !== undefined && issue.assignee.length > 0
+      ? "Assigned"
+      : "Unassigned"
+  );
   if (flags.length > 0) {
     lines.push(`<code>[${flags.join(", ")}]</code>`);
   }
@@ -73,10 +84,14 @@ const getNodeTooltip = (issue: IssueInfo): string => {
   return lines.join("\n");
 };
 
-const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInfo, useDepthRendering: boolean): {nodes: any[], edges: any[]} => {
+const getGraphObjects = (
+  issues: { [key: string]: IssueInfo },
+  fieldInfo: FieldInfo,
+  useDepthRendering: boolean
+): { nodes: any[]; edges: any[] } => {
   let nodes = Object.values(issues).map((issue: IssueInfo) => {
-    const colorEntry = getColor(issue.state, fieldInfo?.stateField)
-    const node : {[key: string]: any} = {
+    const colorEntry = getColor(issue.state, fieldInfo?.stateField);
+    const node: { [key: string]: any } = {
       id: issue.id,
       label: getNodeLabel(issue),
       shape: "box",
@@ -86,7 +101,7 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       node.level = issue.depth;
     }
     if (colorEntry) {
-      node.font = {color: colorEntry.fg};
+      node.font = { color: colorEntry.fg };
       node.color = colorEntry.bg;
     }
     if (issue.depth == 0) {
@@ -96,20 +111,27 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
     if (!issue.linksKnown) {
       node.shapeProperties = {
         borderDashes: [5, 5],
-      }
+      };
     }
     return node;
   });
-  let edges = Object.values(issues).flatMap((issue: IssueInfo) => ([...issue.upstreamLinks, ...issue.downstreamLinks].map((link: IssueLink) => ({
-    from: issue.id,
-    to: link.targetId,
-    label: link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
-    arrows: {
-      from: {
-        enabled: link.direction == "OUTWARD" && link.type == "Subtask"
-      },
-    },
-  }))));
+  let edges = Object.values(issues).flatMap((issue: IssueInfo) =>
+    [...issue.upstreamLinks, ...issue.downstreamLinks].map(
+      (link: IssueLink) => ({
+        from: issue.id,
+        to: link.targetId,
+        label:
+          link.direction === "INWARD"
+            ? link.targetToSource
+            : link.sourceToTarget,
+        arrows: {
+          from: {
+            enabled: link.direction == "OUTWARD" && link.type == "Subtask",
+          },
+        },
+      })
+    )
+  );
   // Remove duplicate links from issue if they already existed.
   /*issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
     const target = issues[sourceLink.targetId];
@@ -117,7 +139,6 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       targetLink.targetId === issueID && targetLink.type === sourceLink.type);
     return !targetHasSameLink;
   });*/
-
 
   // Add nodes when links unknown.
   /*
@@ -160,16 +181,30 @@ const getGraphObjects = (issues: {[key: string]: IssueInfo}, fieldInfo: FieldInf
       });
     });
   */
-  return {nodes, edges};
+  return { nodes, edges };
 };
 
-const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, selectedIssueId, fieldInfo, maxNodeWidth, useHierarchicalLayout, useDepthRendering, setSelectedNode, onOpenNode }) => {
+const DepGraph: React.FunctionComponent<DepGraphProps> = ({
+  height,
+  issues,
+  selectedIssueId,
+  fieldInfo,
+  maxNodeWidth,
+  useHierarchicalLayout,
+  useDepthRendering,
+  setSelectedNode,
+  onOpenNode,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
       console.log(`Rendering graph with ${Object.keys(issues).length} nodes`);
-      const { nodes, edges } = getGraphObjects(issues, fieldInfo, useDepthRendering);
+      const { nodes, edges } = getGraphObjects(
+        issues,
+        fieldInfo,
+        useDepthRendering
+      );
       const nodesDataSet = new DataSet(nodes);
       // @ts-ignore
       const edgesDataSet = new DataSet(edges);
@@ -187,7 +222,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, sele
           hierarchicalRepulsion: {
             avoidOverlap: 1,
           },
-          solver: 'barnesHut',
+          solver: "barnesHut",
         },
         autoResize: true,
         nodes: {
@@ -211,23 +246,23 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, sele
             mono: {
               size: 12,
               face: FONT_FAMILY_MONOSPACE,
-            }
+            },
           },
           widthConstraint: {
             maximum: maxNodeWidth,
-          }
+          },
         },
         edges: {
           smooth: true,
           width: 0.5,
           font: {
-            align: 'middle',
+            align: "middle",
             size: 10,
           },
           color: {
-            color: '#848484',
-            highlight: '#848484',
-            hover: '#848484',
+            color: "#848484",
+            highlight: "#848484",
+            hover: "#848484",
             opacity: 1,
           },
           arrows: {
@@ -250,28 +285,31 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, sele
           improvedLayout: true,
           hierarchical: {
             enabled: useHierarchicalLayout,
-            direction: 'UD',
-            sortMethod: 'hubsize',
-          }
-        }
+            direction: "UD",
+            sortMethod: "hubsize",
+          },
+        },
       };
 
       // @ts-ignore
       let network = new Network(containerRef.current, data, options);
-      const selectedNode = (selectedIssueId != null && (selectedIssueId in issues)) ? issues[selectedIssueId] : Object.values(issues).find((issue) => issue.depth === 0);
+      const selectedNode =
+        selectedIssueId != null && selectedIssueId in issues
+          ? issues[selectedIssueId]
+          : Object.values(issues).find((issue) => issue.depth === 0);
       if (selectedNode) {
         network.selectNodes([selectedNode.id]);
         setSelectedNode(selectedNode.id);
       }
 
-      network.on('selectNode', (params) => {
+      network.on("selectNode", (params) => {
         const nodes = params.nodes;
         if (nodes.length > 0) {
           console.log(`Selecting node: ${nodes[0]}`);
           setSelectedNode(nodes[0]);
         }
       });
-      network.on('doubleClick', (params) => {
+      network.on("doubleClick", (params) => {
         const nodes = params.nodes;
         if (nodes.length > 0) {
           console.log(`Opening node: ${nodes[0]}`);
@@ -280,7 +318,13 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({ height, issues, sele
       });
       network;
     }
-  }, [issues, fieldInfo, useDepthRendering, maxNodeWidth, useHierarchicalLayout]);
+  }, [
+    issues,
+    fieldInfo,
+    useDepthRendering,
+    maxNodeWidth,
+    useHierarchicalLayout,
+  ]);
 
   return <div ref={containerRef} style={{ height }} />;
 };

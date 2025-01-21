@@ -5,8 +5,8 @@ export type FieldInfoField = {
       colorId: string;
       background: string;
       foreground: string;
-    }
-  }
+    };
+  };
 };
 
 export type FieldInfo = {

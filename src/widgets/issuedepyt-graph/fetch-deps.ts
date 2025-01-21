@@ -1,7 +1,7 @@
-import type {HostAPI} from '../../../@types/globals';
-import type {Settings} from '../../../@types/settings';
-import type {FieldInfo, FieldInfoField} from '../../../@types/field-info';
-import type {IssueInfo, IssueLink, Relation, Relations} from './issue-types';
+import type { HostAPI } from "../../../@types/globals";
+import type { Settings } from "../../../@types/settings";
+import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
+import type { IssueInfo, IssueLink, Relation, Relations } from "./issue-types";
 
 export type FollowDirection = "upstream" | "downstream";
 export type FollowDirections = Array<FollowDirection>;
@@ -21,32 +21,36 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
           )
         )
       )
-    )`.replace(/\s+/g, '');
+    )`.replace(/\s+/g, "");
 
   const issue = await host.fetchYouTrack(`issues/${issueID}`, {
     query: {
-      fields
-    }
+      fields,
+    },
   });
 
   return issue;
 }
 
 async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
-  const linkFields = "id,direction," +
+  const linkFields =
+    "id,direction," +
     "linkType(name,sourceToTarget,targetToSource,directed,aggregation)," +
     "issues(idReadable,summary,resolved,customFields(name,value(name)))";
 
   const issue = await host.fetchYouTrack(`issues/${issueID}/links`, {
     query: {
-      fields: linkFields
-    }
+      fields: linkFields,
+    },
   });
 
   return issue;
 }
 
-const getCustomField = (name: string | undefined, fields: Array<{name: string, value: any}>): any => {
+const getCustomField = (
+  name: string | undefined,
+  fields: Array<{ name: string; value: any }>
+): any => {
   if (name === undefined) {
     return null;
   }
@@ -54,13 +58,25 @@ const getCustomField = (name: string | undefined, fields: Array<{name: string, v
   return field;
 };
 
-const getCustomFieldValue = (name: string | undefined, fields: Array<{name: string, value: any}>): any => {
+const getCustomFieldValue = (
+  name: string | undefined,
+  fields: Array<{ name: string; value: any }>
+): any => {
   const field = getCustomField(name, fields);
   return field ? field.value : null;
 };
 
-async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number, maxDepth: number, relations: Relations, followDirs: FollowDirections, settings: Settings, issues: {[key: string]: IssueInfo}): Promise<any> {
-  if (depth == (maxDepth + 1)) {
+async function fetchDepsRecursive(
+  host: HostAPI,
+  issueID: string,
+  depth: number,
+  maxDepth: number,
+  relations: Relations,
+  followDirs: FollowDirections,
+  settings: Settings,
+  issues: { [key: string]: IssueInfo }
+): Promise<any> {
+  if (depth == maxDepth + 1) {
     return;
   }
 
@@ -90,33 +106,49 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
   */
   const followLinks = [...relations.upstream, ...relations.downstream];
   const linksToFollow = links.filter((link: any) => {
-    return followLinks.some((relation) => 
-      link.direction === relation.direction && link.linkType.name.toLowerCase() === relation.type.toLowerCase()
+    return followLinks.some(
+      (relation) =>
+        link.direction === relation.direction &&
+        link.linkType.name.toLowerCase() === relation.type.toLowerCase()
     );
   });
 
-  const linksFlat = linksToFollow.flatMap((link: any) => 
+  const linksFlat = linksToFollow.flatMap((link: any) =>
     link.issues.map((issue: any) => ({
       id: issue.idReadable,
       sourceId: issueID,
       summary: issue.summary,
-      state: getCustomFieldValue(settings?.stateField, issue.customFields)?.name,
-      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)?.name,
+      state: getCustomFieldValue(settings?.stateField, issue.customFields)
+        ?.name,
+      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)
+        ?.name,
       resolved: issue.resolved,
       direction: link.direction,
       linkType: link.linkType.name,
       targetToSource: link.linkType.targetToSource,
       sourceToTarget: link.linkType.sourceToTarget,
-      relation: link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
+      relation:
+        link.direction == "INWARD"
+          ? link.linkType.targetToSource
+          : link.linkType.sourceToTarget,
       depth: depth,
     }))
   );
   for (const link of linksFlat) {
-    const isUpstream = relations.upstream.some((relation) =>
-      link.direction === relation.direction && link.linkType.toLowerCase() === relation.type.toLowerCase()
+    const isUpstream = relations.upstream.some(
+      (relation) =>
+        link.direction === relation.direction &&
+        link.linkType.toLowerCase() === relation.type.toLowerCase()
     );
     const linksList = isUpstream ? issue.upstreamLinks : issue.downstreamLinks;
-    if (linksList.some((x) => link.id === x.targetId && link.direction === x.direction && link.linkType === x.type)) {
+    if (
+      linksList.some(
+        (x) =>
+          link.id === x.targetId &&
+          link.direction === x.direction &&
+          link.linkType === x.type
+      )
+    ) {
       continue;
     }
     linksList.push({
@@ -148,69 +180,124 @@ async function fetchDepsRecursive(host: HostAPI, issueID: string, depth: number,
 
   issue.linksKnown = true;
 
-  const isSameLink = (a: IssueLink, b: IssueLink) => a.targetId === b.targetId && a.direction === b.direction && a.type === b.type;
+  const isSameLink = (a: IssueLink, b: IssueLink) =>
+    a.targetId === b.targetId &&
+    a.direction === b.direction &&
+    a.type === b.type;
   const idsToFetch: Array<string> = [];
   if (followDirs.includes("upstream")) {
-    const newLinks = issue.upstreamLinks.filter((link: IssueLink) =>
-      !prevIssueUpstreamLinks.some((x) => isSameLink(x, link))
+    const newLinks = issue.upstreamLinks.filter(
+      (link: IssueLink) =>
+        !prevIssueUpstreamLinks.some((x) => isSameLink(x, link))
     );
     idsToFetch.push(...newLinks.map((link: IssueLink) => link.targetId));
   }
   if (followDirs.includes("downstream")) {
-    const newLinks = issue.downstreamLinks.filter((link: IssueLink) =>
-      !prevIssueDownstreamLinks.some((x) => isSameLink(x, link))
+    const newLinks = issue.downstreamLinks.filter(
+      (link: IssueLink) =>
+        !prevIssueDownstreamLinks.some((x) => isSameLink(x, link))
     );
     idsToFetch.push(...newLinks.map((link: IssueLink) => link.targetId));
   }
-  const promises = idsToFetch.map((id: string) => fetchDepsRecursive(host, id, depth + 1, maxDepth, relations, followDirs, settings, issues));
+  const promises = idsToFetch.map((id: string) =>
+    fetchDepsRecursive(
+      host,
+      id,
+      depth + 1,
+      maxDepth,
+      relations,
+      followDirs,
+      settings,
+      issues
+    )
+  );
   await Promise.all(promises);
   return;
-};
+}
 
-export async function fetchIssueAndInfo(host: HostAPI, issueId: string, settings: Settings): Promise<{issue: IssueInfo, fieldInfo: FieldInfo}> {
+export async function fetchIssueAndInfo(
+  host: HostAPI,
+  issueId: string,
+  settings: Settings
+): Promise<{ issue: IssueInfo; fieldInfo: FieldInfo }> {
   const issueInfo = await fetchIssueInfo(host, issueId);
 
-  const stateField = getCustomField(settings?.stateField, issueInfo.customFields);
-  let fieldInfo : FieldInfo = {};
+  const stateField = getCustomField(
+    settings?.stateField,
+    issueInfo.customFields
+  );
+  let fieldInfo: FieldInfo = {};
   if (stateField != undefined) {
     fieldInfo = {
       stateField: {
         name: stateField.name,
-        values: Object.fromEntries(stateField.projectCustomField.bundle.values.map((value: any) => ([
-          value.name, {
-          colorId: value.color.id,
-          background: value.color.background,
-          foreground: value.color.foreground,
-        }]))),
-      }
+        values: Object.fromEntries(
+          stateField.projectCustomField.bundle.values.map((value: any) => [
+            value.name,
+            {
+              colorId: value.color.id,
+              background: value.color.background,
+              foreground: value.color.foreground,
+            },
+          ])
+        ),
+      },
     };
   }
 
-  const issue : IssueInfo = {
+  const issue: IssueInfo = {
     id: issueInfo.idReadable,
     summary: issueInfo.summary,
-    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
-    assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
+    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)
+      ?.name,
+    assignee: getCustomFieldValue(
+      settings?.assigneeField,
+      issueInfo.customFields
+    )?.name,
     resolved: issueInfo.resolved,
     depth: 0,
     upstreamLinks: [],
     downstreamLinks: [],
     linksKnown: false,
-  }
+  };
 
-  return {issue, fieldInfo};
-};
+  return { issue, fieldInfo };
+}
 
-export async function fetchDeps(host: HostAPI, issue: IssueInfo, maxDepth: number, relations: Relations, followDirs: FollowDirections, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+export async function fetchDeps(
+  host: HostAPI,
+  issue: IssueInfo,
+  maxDepth: number,
+  relations: Relations,
+  followDirs: FollowDirections,
+  settings: Settings
+): Promise<{ [key: string]: IssueInfo }> {
   let issues = {
     [issue.id]: issue,
-  }
-  await fetchDepsRecursive(host, issue.id, 1, maxDepth, relations, followDirs, settings, issues);
+  };
+  await fetchDepsRecursive(
+    host,
+    issue.id,
+    1,
+    maxDepth,
+    relations,
+    followDirs,
+    settings,
+    issues
+  );
 
   return issues;
 }
 
-export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues: {[key: string]: IssueInfo}, maxDepth: number, relations: Relations, followDirs: FollowDirections, settings: Settings): Promise<{[key: string]: IssueInfo}> {
+export async function fetchDepsAndExtend(
+  host: HostAPI,
+  issueId: string,
+  issues: { [key: string]: IssueInfo },
+  maxDepth: number,
+  relations: Relations,
+  followDirs: FollowDirections,
+  settings: Settings
+): Promise<{ [key: string]: IssueInfo }> {
   if (!(issueId in issues)) {
     console.log(`Failed to fetch issues for ${issueId}: issue unknown`);
     return issues;
@@ -221,7 +308,16 @@ export async function fetchDepsAndExtend(host: HostAPI, issueId: string, issues:
   const newIssues = Object.assign({}, issues);
   const depsDepth = issue.depth + 1;
   const newMaxDepth = Math.max(maxDepth, depsDepth);
-  await fetchDepsRecursive(host, issueId, issue.depth + 1, newMaxDepth, relations, followDirs, settings, newIssues);
+  await fetchDepsRecursive(
+    host,
+    issueId,
+    issue.depth + 1,
+    newMaxDepth,
+    relations,
+    followDirs,
+    settings,
+    newIssues
+  );
 
   return newIssues;
 }

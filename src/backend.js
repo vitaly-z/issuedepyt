@@ -3,12 +3,12 @@
 exports.httpHandler = {
   endpoints: [
     {
-      method: 'GET',
-      path: 'settings',
-      scope: 'issue',  // For unkown reasons ctx.settings isn't populated for the "global" scope.
+      method: "GET",
+      path: "settings",
+      scope: "issue", // For unkown reasons ctx.settings isn't populated for the "global" scope.
       handle: function handle(ctx) {
-        ctx.response.json({settings: ctx.settings});
-      }
+        ctx.response.json({ settings: ctx.settings });
+      },
     },
-  ]
+  ],
 };
