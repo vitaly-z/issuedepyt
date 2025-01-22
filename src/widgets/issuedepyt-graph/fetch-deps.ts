@@ -141,14 +141,13 @@ async function fetchDepsRecursive(
         link.linkType.toLowerCase() === relation.type.toLowerCase()
     );
     const linksList = isUpstream ? issue.upstreamLinks : issue.downstreamLinks;
-    if (
-      linksList.some(
-        (x) =>
-          link.id === x.targetId &&
-          link.direction === x.direction &&
-          link.linkType === x.type
-      )
-    ) {
+    const linkExist = linksList.some(
+      (x) =>
+        link.id === x.targetId &&
+        link.direction === x.direction &&
+        link.linkType === x.type
+    );
+    if (linkExist) {
       continue;
     }
     linksList.push({
@@ -161,24 +160,52 @@ async function fetchDepsRecursive(
   }
 
   for (const link of linksFlat) {
-    if (link.id in issues) {
-      continue;
+    const isUpstream = relations.upstream.some(
+      (relation) =>
+        link.direction === relation.direction &&
+        link.linkType.toLowerCase() === relation.type.toLowerCase()
+    );
+
+    if (!(link.id in issues)) {
+      issues[link.id] = {
+        id: link.id,
+        summary: link.summary,
+        state: link.state,
+        assignee: link.assignee,
+        resolved: link.resolved,
+        depth: link.depth,
+        upstreamLinks: [],
+        downstreamLinks: [],
+        linksKnown: false,
+        showUpstream: false,
+        showDownstream: false,
+      };
     }
 
-    issues[link.id] = {
-      id: link.id,
-      summary: link.summary,
-      state: link.state,
-      assignee: link.assignee,
-      resolved: link.resolved,
-      depth: link.depth,
-      upstreamLinks: [],
-      downstreamLinks: [],
-      linksKnown: false,
-      showUpstream: false,
-      showDownstream: false,
+    // Invert link and inject that in target issue if not already present.
+    const mirroredLink: IssueLink = {
+      targetId: issue.id,
+      type: link.linkType,
+      direction: link.direction === "INWARD" ? "OUTWARD" : "INWARD",
+      targetToSource: link.targetToSource,
+      sourceToTarget: link.sourceToTarget,
     };
+
+    const targetIssue = issues[link.id];
+    const mirroredLinksList = isUpstream
+      ? targetIssue.downstreamLinks
+      : targetIssue.upstreamLinks;
+    const mirroredLinkExist = mirroredLinksList.some(
+      (x) =>
+        mirroredLink.targetId === x.targetId &&
+        mirroredLink.direction === x.direction &&
+        mirroredLink.type === x.type
+    );
+    if (!mirroredLinkExist) {
+      mirroredLinksList.push(mirroredLink);
+    }
   }
+
 
   issue.linksKnown = true;
   if (followDirs.includes("upstream")) {
