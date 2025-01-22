@@ -270,51 +270,55 @@ const AppComponent: React.FunctionComponent = () => {
                 <Button href={`/issue/${selectedNode}`}>
                   Open {selectedNode}
                 </Button>
-                <Group>
-                  <Checkbox
-                    label="Show upstream"
-                    checked={issueData[selectedNode].showUpstream}
-                    onChange={(e: any) =>
-                      setIssueData((issues) => {
-                        if (selectedNode in issues) {
-                          const updatedIssues = { ...issues };
-                          updatedIssues[selectedNode] = {
-                            ...updatedIssues[selectedNode],
-                            showUpstream: e.target.checked,
-                          };
-                          return updatedIssues;
-                        }
-                        return issues;
-                      })
-                    }
-                  />
-                  <Checkbox
-                    label="Show downstream"
-                    checked={issueData[selectedNode].showDownstream}
-                    onChange={(e: any) =>
-                      setIssueData((issues) => {
-                        if (selectedNode in issues) {
-                          const updatedIssues = { ...issues };
-                          updatedIssues[selectedNode] = {
-                            ...updatedIssues[selectedNode],
-                            showDownstream: e.target.checked,
-                          };
-                          return updatedIssues;
-                        }
-                        return issues;
-                      })
-                    }
-                  />
-                </Group>
-                {!issueData[selectedNode].linksKnown && (
-                  <Group className="extra-margin-left">
-                    <Button
-                      onClick={() => loadIssueDeps(selectedNode)}
-                      icon={DownloadIcon}
-                    >
-                      Load relations
-                    </Button>
+                <span className="extra-margin-left">
+                  <Group>
+                    <Checkbox
+                      label="Show upstream"
+                      checked={issueData[selectedNode].showUpstream}
+                      onChange={(e: any) =>
+                        setIssueData((issues) => {
+                          if (selectedNode in issues) {
+                            const updatedIssues = { ...issues };
+                            updatedIssues[selectedNode] = {
+                              ...updatedIssues[selectedNode],
+                              showUpstream: e.target.checked,
+                            };
+                            return updatedIssues;
+                          }
+                          return issues;
+                        })
+                      }
+                    />
+                    <Checkbox
+                      label="Show downstream"
+                      checked={issueData[selectedNode].showDownstream}
+                      onChange={(e: any) =>
+                        setIssueData((issues) => {
+                          if (selectedNode in issues) {
+                            const updatedIssues = { ...issues };
+                            updatedIssues[selectedNode] = {
+                              ...updatedIssues[selectedNode],
+                              showDownstream: e.target.checked,
+                            };
+                            return updatedIssues;
+                          }
+                          return issues;
+                        })
+                      }
+                    />
                   </Group>
+                </span>
+                {!issueData[selectedNode].linksKnown && (
+                  <span className="extra-margin-left">
+                    <Group>
+                      <Button
+                        onClick={() => loadIssueDeps(selectedNode)}
+                        icon={DownloadIcon}
+                      >
+                        Load relations
+                      </Button>
+                    </Group>
+                  </span>
                 )}
               </Group>
             )}

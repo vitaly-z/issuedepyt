@@ -12,3 +12,73 @@
 .settings {
   margin: calc(var(--ring-unit) / 2);
 }
+
+div.dep-graph {
+  margin-top: calc(var(--ring-unit) / 2);
+  margin-bottom: calc(var(--ring-unit) / 2);
+}
+
+/* Style navigation controls to look OK in dark mode as well. */
+div.vis-network {
+  background-color: white;
+  border-radius: var(--ring-border-radius);
+  border: 1px solid var(--ring-borders-color);
+}
+
+div.vis-network div.vis-navigation div.vis-button.vis-up,
+div.vis-network div.vis-navigation div.vis-button.vis-down,
+div.vis-network div.vis-navigation div.vis-button.vis-left,
+div.vis-network div.vis-navigation div.vis-button.vis-right,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomOut,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
+  background-image: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.vis-network div.vis-navigation div.vis-button:hover {
+  box-shadow: none !important;
+}
+
+.vis-button:after {
+  font-size: 2em;
+  color: #878787;
+}
+
+.vis-button:hover:after {
+  font-size: 2em;
+  color: #bababa;
+}
+
+.vis-button.vis-up:after {
+  content: "🡅";
+}
+
+.vis-button.vis-down:after {
+  content: "🡇";
+}
+
+.vis-button.vis-left:after {
+  content: "🡄";
+}
+
+.vis-button.vis-right:after {
+  content: "🡆";
+}
+
+.vis-button.vis-zoomIn:after {
+  content: "+";
+  font-weight: bold;
+}
+
+.vis-button.vis-zoomOut:after {
+  content: "−";
+  font-weight: bold;
+}
+
+.vis-button.vis-zoomExtends:after {
+  content: "⛶";
+  font-weight: bold;
+}

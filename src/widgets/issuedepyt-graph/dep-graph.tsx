@@ -3,7 +3,7 @@ import { DataSet } from "vis-data/peer/esm/vis-data";
 import { Network } from "vis-network/standalone/esm/vis-network";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
-import { COLOR_PALETTE, ColorPaletteItem } from "./colors";
+import { ColorPaletteItem } from "./colors";
 
 interface DepGraphProps {
   height: string;
@@ -147,47 +147,6 @@ const getGraphObjects = (
     return !targetHasSameLink;
   });*/
 
-  // Add nodes when links unknown.
-  /*
-  Object.values(issues)
-    .filter((issue: IssueInfo) => !issue.linksKnown)
-    .forEach((issue: IssueInfo, index: number) => {
-      const nodeColor = COLOR_PALETTE[16];
-      const unknownLinksNodeId = `${issue.id}:${index}:unknownlinks`;
-      let node : any = {
-        id: unknownLinksNodeId,
-        label: "?",
-        shape: "circle",
-        font: {
-          color: nodeColor.fg,
-        },
-        color: nodeColor.bg,
-        title: "Max depth reached",
-      }
-      if (useDepthRendering) {
-        node.level = issue.depth + 1;
-      }
-      nodes.push(node);
-      // @ts-ignore
-      edges.push({
-        from: issue.id,
-        to: unknownLinksNodeId,
-        arrows: {
-          to: {
-            enabled: true,
-            scaleFactor: 0.5,
-            type: "normal",
-          },
-          from: {
-            enabled: false,
-            scaleFactor: 0.5,
-            type: "diamond",
-          },
-        },
-        dashes: true,
-      });
-    });
-  */
   return { nodes, edges };
 };
 
@@ -267,9 +226,9 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
             size: 10,
           },
           color: {
-            color: "#848484",
-            highlight: "#848484",
-            hover: "#848484",
+            color: "#878787",
+            highlight: "#878787",
+            hover: "#bababa",
             opacity: 1,
           },
           arrows: {
@@ -333,7 +292,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
     useHierarchicalLayout,
   ]);
 
-  return <div ref={containerRef} style={{ height }} />;
+  return <div ref={containerRef} className="dep-graph" style={{ height }} />;
 };
 
 export default DepGraph;
