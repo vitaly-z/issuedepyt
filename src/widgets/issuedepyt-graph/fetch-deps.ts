@@ -206,7 +206,6 @@ async function fetchDepsRecursive(
     }
   }
 
-
   issue.linksKnown = true;
   if (followDirs.includes("upstream")) {
     issue.showUpstream = true;
