@@ -1,10 +1,7 @@
-import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
+import React, { memo, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
-import ButtonGroup from "@jetbrains/ring-ui-built/components/button-group/button-group";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
-import DropdownMenu from "@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu";
-import Input from "@jetbrains/ring-ui-built/components/input/input";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
 import LoaderInline from "@jetbrains/ring-ui-built/components/loader-inline/loader-inline";
 import UpdateIcon from "@jetbrains/icons/update";
@@ -22,6 +19,7 @@ import type {
 } from "./issue-types";
 import DepGraph from "./dep-graph";
 import IssueInfoCard from "./issue-info-card";
+import OptionsDropdownMenu from "./options-dropdown-menu";
 
 // Register widget in YouTrack. To learn more, see https://www.jetbrains.com/help/youtrack/devportal-apps/apps-host-api.html
 const host: HostAPI = await YTApp.register();
@@ -335,96 +333,19 @@ const AppComponent: React.FunctionComponent = () => {
                 <Button onClick={refreshData} icon={UpdateIcon}>
                   Reload
                 </Button>
-                <DropdownMenu
-                  anchor={
-                    <Button dropdown inline>
-                      Options
-                    </Button>
-                  }
-                  data={[
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                      label: "Layout",
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                      template: (
-                        <Checkbox
-                          label="Tree layout"
-                          checked={useHierarchicalLayout}
-                          onChange={(e: any) =>
-                            setUseHierarchicalLayout(e.target.checked)
-                          }
-                        />
-                      ),
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                      template: (
-                        <Checkbox
-                          label="Strict depth layout"
-                          checked={useDepthRendering}
-                          onChange={(e: any) =>
-                            setUseDepthRendering(e.target.checked)
-                          }
-                        />
-                      ),
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                      template: (
-                        <Input
-                          type="number"
-                          label="Max depth"
-                          value={maxDepth}
-                          onChange={(e: any) =>
-                            setMaxDepth(Number(e.target.value))
-                          }
-                        />
-                      ),
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                      template: (
-                        <Input
-                          type="number"
-                          label="Max node width"
-                          value={maxNodeWidth}
-                          onChange={(e: any) =>
-                            setMaxNodeWidth(Number(e.target.value))
-                          }
-                        />
-                      ),
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.TITLE,
-                      label: "Follow direction",
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                      template: (
-                        <Checkbox
-                          label="Follow upstream relations"
-                          checked={followUpstream}
-                          onChange={(e: any) =>
-                            setFollowUpstream(e.target.checked)
-                          }
-                        />
-                      ),
-                    },
-                    {
-                      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
-                      template: (
-                        <Checkbox
-                          label="Follow downstream relations"
-                          checked={followDownstream}
-                          onChange={(e: any) =>
-                            setFollowDownstream(e.target.checked)
-                          }
-                        />
-                      ),
-                    },
-                  ]}
+                <OptionsDropdownMenu
+                  maxDepth={maxDepth}
+                  maxNodeWidth={maxNodeWidth}
+                  useHierarchicalLayout={useHierarchicalLayout}
+                  useDepthRendering={useDepthRendering}
+                  followUpstream={followUpstream}
+                  followDownstream={followDownstream}
+                  setMaxDepth={setMaxDepth}
+                  setMaxNodeWidth={setMaxNodeWidth}
+                  setUseHierarchicalLayout={setUseHierarchicalLayout}
+                  setUseDepthRendering={setUseDepthRendering}
+                  setFollowUpstream={setFollowUpstream}
+                  setFollowDownstream={setFollowDownstream}
                 />
               </Group>
             </div>
