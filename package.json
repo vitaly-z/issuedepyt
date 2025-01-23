@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.app.json && vite build && youtrack-app validate dist",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "test": "echo 'no tests'",
-    "pack": "rm -rf issuedepyt.zip && npx --yes bestzip issuedepyt.zip dist/*",
+    "pack": "rm -rf issuedepyt.zip && cd dist && npx --yes bestzip ../issuedepyt.zip *",
     "upload": "youtrack-app upload dist"
   },
   "dependencies": {
