@@ -2,8 +2,13 @@
 
 ![issuedepyt icon](./public/issuedepyt-icon.svg)
 
-This YouTrack app allows visualizing directed issue dependencies. The dependencies
-are visualized as a graph or tree using [vis.js](visjs.org).
+YouTrack app to visualize issue dependencies. The issue dependencies are visualized using a graph or
+tree including configured upstream and/or downstream relations. This allows for e.g. visualizing
+*all* upstream issues that an issue depend on including all subtasks and issues depended on.
+
+Any custom YouTrack Issue Link Types are also supported.
+
+Dependencies are visualized as a graph or tree using [vis.js](visjs.org).
 
 ## Screenshots
 
