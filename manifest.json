@@ -7,8 +7,8 @@
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "version": "0.0.1",
-  "changeNotes": "Version 0.0.1: Initial version.",
+  "version": "1.0.0",
+  "changeNotes": "Version 1.0.0: Initial version.",
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
   "widgets": [
