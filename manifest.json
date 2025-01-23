@@ -1,17 +1,17 @@
 {
+  "$schema": "https://json.schemastore.org/youtrack-app.json",
   "name": "issuedepyt",
   "title": "Issue Dependencies",
   "description": "Visualize issue dependencies.",
-  "$schema": "https://json.schemastore.org/youtrack-app.json",
-  "version": "0.0.1",
-  "changeNotes": "Version 0.0.1: Initial version.",
   "vendor": {
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "icon": "icon.svg",
+  "version": "0.0.1",
+  "changeNotes": "Version 0.0.1: Initial version.",
+  "icon": "issuedepyt-icon.svg",
+  "minYouTrackVersion": "2024.3.0",
   "widgets": [
-
     {
       "key": "issuedepyt-graph",
       "name": "Issue dependencies",
