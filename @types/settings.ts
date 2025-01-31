@@ -5,4 +5,5 @@ export type Settings = {
   downstreamRelations?: string;
   autoLoadDeps?: boolean;
   useHierarchicalLayout?: boolean;
+  maxRecursionDepth?: number;
 };

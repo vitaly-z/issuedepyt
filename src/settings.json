@@ -49,6 +49,15 @@
       "description": "Use the hierarcical tree layout by default.",
       "default": true,
       "x-scope": "GLOBAL"
+    },
+    "maxRecursionDepth": {
+      "type": "integer",
+      "title": "Maximum recursion depth",
+      "description": "The maximum graph depth to recurse when following ticket relations.",
+      "default": 6,
+      "minimum": 0,
+      "maximum": 100,
+      "x-scope": "GLOBAL"
     }
   },
   "required": [

@@ -25,7 +25,7 @@ import OptionsDropdownMenu from "./options-dropdown-menu";
 const host: HostAPI = await YTApp.register();
 
 const issue = YTApp.entity;
-const DEFAULT_MAX_DEPTH = 8;
+const DEFAULT_MAX_DEPTH = 6;
 const DEFAULT_MAX_NODE_WIDTH = 200;
 const DEFAULT_USE_HIERARCHICAL_LAYOUT = false;
 const DEFAULT_USE_DEPTH_RENDERING = true;
@@ -230,6 +230,9 @@ const AppComponent: React.FunctionComponent = () => {
         const newSettings = resp.settings;
         console.log("Got settings", newSettings);
         setSettings(newSettings);
+        if (newSettings?.maxRecursionDepth != undefined) {
+          setMaxDepth(newSettings.maxRecursionDepth);
+        }
 
         const newRelations = getRelations(newSettings);
         if (newRelations) {
