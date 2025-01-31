@@ -13,6 +13,13 @@
   margin: calc(var(--ring-unit) / 2);
 }
 
+div.vertical-size-control-bar {
+  margin-top: calc(var(--ring-unit) / 2);
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--ring-unit));
+}
+
 div.dep-graph {
   margin-top: calc(var(--ring-unit) / 2);
   margin-bottom: calc(var(--ring-unit) / 2);

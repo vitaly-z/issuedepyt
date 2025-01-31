@@ -11,15 +11,11 @@ import type { Settings } from "../../../@types/settings";
 import type { FieldInfo } from "../../../@types/field-info";
 import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
 import type { FollowDirection, FollowDirections } from "./fetch-deps";
-import type {
-  IssueInfo,
-  Relation,
-  Relations,
-  DirectionType,
-} from "./issue-types";
+import type { IssueInfo, Relation, Relations, DirectionType } from "./issue-types";
 import DepGraph from "./dep-graph";
 import IssueInfoCard from "./issue-info-card";
 import OptionsDropdownMenu from "./options-dropdown-menu";
+import VerticalSizeControl from "./vertical-size-control";
 
 // Register widget in YouTrack. To learn more, see https://www.jetbrains.com/help/youtrack/devportal-apps/apps-host-api.html
 const host: HostAPI = await YTApp.register();
@@ -30,7 +26,6 @@ const DEFAULT_MAX_NODE_WIDTH = 200;
 const DEFAULT_USE_HIERARCHICAL_LAYOUT = false;
 const DEFAULT_USE_DEPTH_RENDERING = true;
 
-type GRAPH_SIZE_KEY = "tiny" | "small" | "medium" | "large";
 type GRAPH_SIZE_ITEM = {
   height: number;
   limits?: {
@@ -38,32 +33,32 @@ type GRAPH_SIZE_ITEM = {
     maxCount: number;
   };
 };
-const GRAPH_SIZE: Record<GRAPH_SIZE_KEY, GRAPH_SIZE_ITEM> = {
-  tiny: {
+const GRAPH_SIZE: Array<GRAPH_SIZE_ITEM> = [
+  {
     height: 100,
     limits: {
       maxDepth: 0,
       maxCount: 2,
     },
   },
-  small: {
+  {
     height: 200,
     limits: {
       maxDepth: 1,
       maxCount: 10,
     },
   },
-  medium: {
+  {
     height: 400,
     limits: {
       maxDepth: 3,
       maxCount: 20,
     },
   },
-  large: {
+  {
     height: 700,
   },
-};
+];
 
 const getNumIssues = (issueData: { [key: string]: IssueInfo }): number => {
   return Object.keys(issueData).length;
@@ -75,23 +70,14 @@ const getMaxDepth = (issueData: { [key: string]: IssueInfo }): number => {
     .reduce((acc, val) => Math.max(acc, val), 0);
 };
 
-const getGraphSizeKey = (issueData: {
-  [key: string]: IssueInfo;
-}): GRAPH_SIZE_KEY => {
+const calcGraphSizeFromIssues = (issueData: { [key: string]: IssueInfo }): number => {
   const count = getNumIssues(issueData);
   const maxDepth = getMaxDepth(issueData);
-  const sizeEntry = Object.entries(GRAPH_SIZE).find(([key, value]) => {
+  const sizeEntry = GRAPH_SIZE.find((value) => {
     const limits = value?.limits;
-    return (
-      limits === undefined ||
-      (maxDepth <= limits.maxDepth && count <= limits.maxCount)
-    );
+    return limits === undefined || (maxDepth <= limits.maxDepth && count <= limits.maxCount);
   });
-  return sizeEntry ? (sizeEntry[0] as GRAPH_SIZE_KEY) : "large";
-};
-
-const getGraphHeight = (sizeKey: GRAPH_SIZE_KEY): string => {
-  return `${GRAPH_SIZE[sizeKey].height}px`;
+  return sizeEntry ? sizeEntry.height : 400;
 };
 
 const parseRelationList = (relations: string | undefined): Array<Relation> => {
@@ -121,17 +107,14 @@ const AppComponent: React.FunctionComponent = () => {
     downstream: [],
   });
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
+  const [graphHeight, setGraphHeight] = useState<number>(400);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [maxNodeWidth, setMaxNodeWidth] = useState<number>(
-    DEFAULT_MAX_NODE_WIDTH
-  );
+  const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
     DEFAULT_USE_HIERARCHICAL_LAYOUT
   );
-  const [useDepthRendering, setUseDepthRendering] = useState<boolean>(
-    DEFAULT_USE_DEPTH_RENDERING
-  );
+  const [useDepthRendering, setUseDepthRendering] = useState<boolean>(DEFAULT_USE_DEPTH_RENDERING);
   const [followUpstream, setFollowUpstream] = useState<boolean>(true);
   const [followDownstream, setFollowDownstream] = useState<boolean>(false);
   const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
@@ -150,8 +133,11 @@ const AppComponent: React.FunctionComponent = () => {
     if (graphVisible) {
       setLoading(true);
       console.log(`Fetching deps for ${issue.id}...`);
-      const { issue: issueInfo, fieldInfo: fieldInfoData } =
-        await fetchIssueAndInfo(host, issue.id, settings);
+      const { issue: issueInfo, fieldInfo: fieldInfoData } = await fetchIssueAndInfo(
+        host,
+        issue.id,
+        settings
+      );
       const followDirs: FollowDirections = [];
       if (followUpstream) {
         followDirs.push("upstream");
@@ -159,15 +145,9 @@ const AppComponent: React.FunctionComponent = () => {
       if (followDownstream) {
         followDirs.push("downstream");
       }
-      const issues = await fetchDeps(
-        host,
-        issueInfo,
-        maxDepth,
-        relations,
-        followDirs,
-        settings
-      );
+      const issues = await fetchDeps(host, issueInfo, maxDepth, relations, followDirs, settings);
       setFieldInfo(fieldInfoData);
+      setGraphHeight(calcGraphSizeFromIssues(issues));
       setIssueData(issues);
       setLoading(false);
     } else {
@@ -175,10 +155,7 @@ const AppComponent: React.FunctionComponent = () => {
     }
   };
 
-  const loadIssueDeps = async (
-    issueId: string,
-    direction: FollowDirection | null = null
-  ) => {
+  const loadIssueDeps = async (issueId: string, direction: FollowDirection | null = null) => {
     if (graphVisible) {
       console.log(`Fetching deps for ${issueId}...`);
       setLoading(true);
@@ -224,25 +201,23 @@ const AppComponent: React.FunctionComponent = () => {
   }, [graphVisible, settings]);
 
   useEffect(() => {
-    host
-      .fetchApp<{ settings: Settings }>("backend/settings", { scope: true })
-      .then((resp) => {
-        const newSettings = resp.settings;
-        console.log("Got settings", newSettings);
-        setSettings(newSettings);
-        if (newSettings?.maxRecursionDepth != undefined) {
-          setMaxDepth(newSettings.maxRecursionDepth);
-        }
+    host.fetchApp<{ settings: Settings }>("backend/settings", { scope: true }).then((resp) => {
+      const newSettings = resp.settings;
+      console.log("Got settings", newSettings);
+      setSettings(newSettings);
+      if (newSettings?.maxRecursionDepth != undefined) {
+        setMaxDepth(newSettings.maxRecursionDepth);
+      }
 
-        const newRelations = getRelations(newSettings);
-        if (newRelations) {
-          setRelations(newRelations);
-        }
+      const newRelations = getRelations(newSettings);
+      if (newRelations) {
+        setRelations(newRelations);
+      }
 
-        if (newSettings?.useHierarchicalLayout != undefined) {
-          setUseHierarchicalLayout(newSettings.useHierarchicalLayout);
-        }
-      });
+      if (newSettings?.useHierarchicalLayout != undefined) {
+        setUseHierarchicalLayout(newSettings.useHierarchicalLayout);
+      }
+    });
   }, [host]);
 
   useEffect(() => {
@@ -253,9 +228,7 @@ const AppComponent: React.FunctionComponent = () => {
     <div className="widget">
       {!graphVisible && (
         <div>
-          <Button onClick={() => setGraphVisible((value) => !value)}>
-            Load graph...
-          </Button>
+          <Button onClick={() => setGraphVisible((value) => !value)}>Load graph...</Button>
         </div>
       )}
       {graphVisible && (
@@ -270,9 +243,7 @@ const AppComponent: React.FunctionComponent = () => {
             )}
             {selectedNode !== null && selectedNode in issueData && (
               <Group>
-                <Button href={`/issue/${selectedNode}`}>
-                  Open {selectedNode}
-                </Button>
+                <Button href={`/issue/${selectedNode}`}>Open {selectedNode}</Button>
                 <span className="extra-margin-left">
                   <Group>
                     <Checkbox
@@ -314,10 +285,7 @@ const AppComponent: React.FunctionComponent = () => {
                 {!issueData[selectedNode].linksKnown && (
                   <span className="extra-margin-left">
                     <Group>
-                      <Button
-                        onClick={() => loadIssueDeps(selectedNode)}
-                        icon={DownloadIcon}
-                      >
+                      <Button onClick={() => loadIssueDeps(selectedNode)} icon={DownloadIcon}>
                         Load relations
                       </Button>
                     </Group>
@@ -359,7 +327,7 @@ const AppComponent: React.FunctionComponent = () => {
           </Group>
           {Object.keys(issueData).length > 0 && (
             <DepGraph
-              height={getGraphHeight(getGraphSizeKey(issueData))}
+              height={`${graphHeight}px`}
               issues={issueData}
               selectedIssueId={selectedNode}
               fieldInfo={fieldInfo}
@@ -373,6 +341,13 @@ const AppComponent: React.FunctionComponent = () => {
           {selectedNode !== null && isSelectedNodeAnIssue(selectedNode) && (
             <IssueInfoCard issue={issueData[selectedNode]} />
           )}
+          <VerticalSizeControl
+            minValue={100}
+            maxValue={1000}
+            value={graphHeight}
+            increment={100}
+            onChange={setGraphHeight}
+          />
         </div>
       )}
     </div>
