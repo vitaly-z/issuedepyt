@@ -44,6 +44,12 @@ the graph is loaded on request by clicking the "Load graph..." button.
 
 When enabled, the dependency graph is rendered as a tree instead of as a node graph.
 
+##### Maximum recursion depth
+
+The maximum graph depth to recurse when loading the relations for a ticket. If not all relations can
+be followed without reaching the maximum graph depth is reached, then the nodes for which not all
+relations are known are visualized with a dashed border.
+
 #### Per project app settings
 
 ##### State field name
