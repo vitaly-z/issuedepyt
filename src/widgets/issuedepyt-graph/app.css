@@ -20,6 +20,11 @@ div.vertical-size-control-bar {
   gap: calc(var(--ring-unit));
 }
 
+div.dep-timeline {
+  margin-top: calc(var(--ring-unit) / 2);
+  margin-bottom: calc(var(--ring-unit) / 2);
+}
+
 div.dep-graph {
   margin-top: calc(var(--ring-unit) / 2);
   margin-bottom: calc(var(--ring-unit) / 2);

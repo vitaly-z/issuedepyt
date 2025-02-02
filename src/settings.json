@@ -20,6 +20,14 @@
       "minLength": 1,
       "x-scope": "PROJECT"
     },
+    "dueDateField": {
+      "type": "string",
+      "title": "Due Date field name",
+      "description": "Name of the Due Date field.",
+      "default": "Due Date",
+      "minLength": 1,
+      "x-scope": "PROJECT"
+    },
     "upstreamRelations": {
       "type": "string",
       "title": "Upstream relations given as a comma-separated list of direction:type items",

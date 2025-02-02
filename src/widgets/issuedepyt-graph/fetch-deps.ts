@@ -118,19 +118,16 @@ async function fetchDepsRecursive(
       id: issue.idReadable,
       sourceId: issueID,
       summary: issue.summary,
-      state: getCustomFieldValue(settings?.stateField, issue.customFields)
-        ?.name,
-      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)
-        ?.name,
+      state: getCustomFieldValue(settings?.stateField, issue.customFields)?.name,
+      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)?.name,
+      dueDate: getCustomFieldValue(settings?.dueDateField, issue.customFields),
       resolved: issue.resolved,
       direction: link.direction,
       linkType: link.linkType.name,
       targetToSource: link.linkType.targetToSource,
       sourceToTarget: link.linkType.sourceToTarget,
       relation:
-        link.direction == "INWARD"
-          ? link.linkType.targetToSource
-          : link.linkType.sourceToTarget,
+        link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
       depth: depth,
     }))
   );
@@ -142,10 +139,7 @@ async function fetchDepsRecursive(
     );
     const linksList = isUpstream ? issue.upstreamLinks : issue.downstreamLinks;
     const linkExist = linksList.some(
-      (x) =>
-        link.id === x.targetId &&
-        link.direction === x.direction &&
-        link.linkType === x.type
+      (x) => link.id === x.targetId && link.direction === x.direction && link.linkType === x.type
     );
     if (linkExist) {
       continue;
@@ -172,6 +166,7 @@ async function fetchDepsRecursive(
         summary: link.summary,
         state: link.state,
         assignee: link.assignee,
+        dueDate: link.dueDate ? new Date(link.dueDate) : null,
         resolved: link.resolved,
         depth: link.depth,
         upstreamLinks: [],
@@ -192,9 +187,7 @@ async function fetchDepsRecursive(
     };
 
     const targetIssue = issues[link.id];
-    const mirroredLinksList = isUpstream
-      ? targetIssue.downstreamLinks
-      : targetIssue.upstreamLinks;
+    const mirroredLinksList = isUpstream ? targetIssue.downstreamLinks : targetIssue.upstreamLinks;
     const mirroredLinkExist = mirroredLinksList.some(
       (x) =>
         mirroredLink.targetId === x.targetId &&
@@ -215,35 +208,22 @@ async function fetchDepsRecursive(
   }
 
   const isSameLink = (a: IssueLink, b: IssueLink) =>
-    a.targetId === b.targetId &&
-    a.direction === b.direction &&
-    a.type === b.type;
+    a.targetId === b.targetId && a.direction === b.direction && a.type === b.type;
   const idsToFetch: Array<string> = [];
   if (followDirs.includes("upstream")) {
     const newLinks = issue.upstreamLinks.filter(
-      (link: IssueLink) =>
-        !prevIssueUpstreamLinks.some((x) => isSameLink(x, link))
+      (link: IssueLink) => !prevIssueUpstreamLinks.some((x) => isSameLink(x, link))
     );
     idsToFetch.push(...newLinks.map((link: IssueLink) => link.targetId));
   }
   if (followDirs.includes("downstream")) {
     const newLinks = issue.downstreamLinks.filter(
-      (link: IssueLink) =>
-        !prevIssueDownstreamLinks.some((x) => isSameLink(x, link))
+      (link: IssueLink) => !prevIssueDownstreamLinks.some((x) => isSameLink(x, link))
     );
     idsToFetch.push(...newLinks.map((link: IssueLink) => link.targetId));
   }
   const promises = idsToFetch.map((id: string) =>
-    fetchDepsRecursive(
-      host,
-      id,
-      depth + 1,
-      maxDepth,
-      relations,
-      followDirs,
-      settings,
-      issues
-    )
+    fetchDepsRecursive(host, id, depth + 1, maxDepth, relations, followDirs, settings, issues)
   );
   await Promise.all(promises);
   return;
@@ -256,10 +236,7 @@ export async function fetchIssueAndInfo(
 ): Promise<{ issue: IssueInfo; fieldInfo: FieldInfo }> {
   const issueInfo = await fetchIssueInfo(host, issueId);
 
-  const stateField = getCustomField(
-    settings?.stateField,
-    issueInfo.customFields
-  );
+  const stateField = getCustomField(settings?.stateField, issueInfo.customFields);
   let fieldInfo: FieldInfo = {};
   if (stateField != undefined) {
     fieldInfo = {
@@ -279,15 +256,13 @@ export async function fetchIssueAndInfo(
     };
   }
 
+  const dueDateValue = getCustomFieldValue(settings?.dueDateField, issueInfo.customFields);
   const issue: IssueInfo = {
     id: issueInfo.idReadable,
     summary: issueInfo.summary,
-    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)
-      ?.name,
-    assignee: getCustomFieldValue(
-      settings?.assigneeField,
-      issueInfo.customFields
-    )?.name,
+    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
+    assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
+    dueDate: dueDateValue ? new Date(dueDateValue) : null,
     resolved: issueInfo.resolved,
     depth: 0,
     upstreamLinks: [],
@@ -311,16 +286,7 @@ export async function fetchDeps(
   let issues = {
     [issue.id]: issue,
   };
-  await fetchDepsRecursive(
-    host,
-    issue.id,
-    1,
-    maxDepth,
-    relations,
-    followDirs,
-    settings,
-    issues
-  );
+  await fetchDepsRecursive(host, issue.id, 1, maxDepth, relations, followDirs, settings, issues);
 
   return issues;
 }

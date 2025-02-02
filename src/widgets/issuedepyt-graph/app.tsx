@@ -13,6 +13,7 @@ import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
 import type { FollowDirection, FollowDirections } from "./fetch-deps";
 import type { IssueInfo, Relation, Relations, DirectionType } from "./issue-types";
 import DepGraph from "./dep-graph";
+import DepTimeline from "./dep-timeline";
 import IssueInfoCard from "./issue-info-card";
 import OptionsDropdownMenu from "./options-dropdown-menu";
 import VerticalSizeControl from "./vertical-size-control";
@@ -325,6 +326,16 @@ const AppComponent: React.FunctionComponent = () => {
               </Group>
             </div>
           </Group>
+          {Object.keys(issueData).length > 0 && (
+            <DepTimeline
+              issues={issueData}
+              selectedIssueId={selectedNode}
+              fieldInfo={fieldInfo}
+              maxNodeWidth={maxNodeWidth}
+              setSelectedNode={setSelectedNode}
+              onOpenNode={openNode}
+            />
+          )}
           {Object.keys(issueData).length > 0 && (
             <DepGraph
               height={`${graphHeight}px`}
