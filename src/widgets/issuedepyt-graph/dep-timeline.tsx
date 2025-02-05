@@ -47,6 +47,12 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
       };
       // @ts-ignore
       timeline.current = new Timeline(containerRef.current, items.current, options);
+      timeline.current.on("select", (props) => {
+        const selectedItems = props.items;
+        if (selectedItems != undefined && selectedItems.length > 0) {
+          setSelectedNode(selectedItems[0]);
+        }
+      });
     }
   }, []);
 
