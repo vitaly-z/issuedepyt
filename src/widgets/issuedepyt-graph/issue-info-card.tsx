@@ -115,6 +115,16 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({
                       </div>
                     </p>
                   )}
+                  {issue?.dueDate && (
+                    <p>
+                      <Text size={Text.Size.S} info>
+                        Due Date
+                      </Text>
+                      <div>
+                        <Text size={Text.Size.M}>{issue.dueDate.toDateString()}</Text>
+                      </div>
+                    </p>
+                  )}
                 </Col>
                 <Col xs={9}>{relationComps}</Col>
               </Row>

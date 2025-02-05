@@ -55,6 +55,9 @@ const getNodeLabel = (issue: IssueInfo): string => {
   flags.push(
     issue?.assignee !== undefined && issue.assignee.length > 0 ? "Assigned" : "Unassigned"
   );
+  if (issue?.dueDate) {
+    flags.push("Due Date");
+  }
   if (flags.length > 0) {
     lines.push(`<code>[${flags.join(", ")}]</code>`);
   }
@@ -70,6 +73,9 @@ const getNodeTooltip = (issue: IssueInfo): string => {
   }
   if (issue?.assignee != undefined && issue.assignee.length > 0) {
     lines.push(`Assignee: ${issue.assignee}`);
+  }
+  if (issue?.dueDate) {
+    lines.push(`Due date: ${issue.dueDate.toDateString()}`);
   }
   lines.push("Click to select and double-click to open.");
 
