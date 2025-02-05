@@ -53,6 +53,12 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
           setSelectedNode(selectedItems[0]);
         }
       });
+      timeline.current.on("doubleClick", (props) => {
+        const clickedItem = props?.item;
+        if (clickedItem != undefined) {
+          onOpenNode(clickedItem);
+        }
+      });
     }
   }, []);
 
