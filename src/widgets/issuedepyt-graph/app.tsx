@@ -108,6 +108,7 @@ const AppComponent: React.FunctionComponent = () => {
     downstream: [],
   });
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
+  const [timelineVisible, setTimelineVisible] = useState<boolean>(false);
   const [graphHeight, setGraphHeight] = useState<number>(400);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
@@ -294,6 +295,15 @@ const AppComponent: React.FunctionComponent = () => {
                 )}
               </Group>
             )}
+            <span className="extra-margin-left">
+              <Group>
+                <Checkbox
+                  label="Show timeline"
+                  checked={timelineVisible}
+                  onChange={(e: any) => setTimelineVisible(e.target.checked)}
+                />
+              </Group>
+            </span>
             <div style={{ float: "right" }}>
               <Group>
                 {!loading && (
@@ -326,7 +336,7 @@ const AppComponent: React.FunctionComponent = () => {
               </Group>
             </div>
           </Group>
-          {Object.keys(issueData).length > 0 && (
+          {timelineVisible && Object.keys(issueData).length > 0 && (
             <DepTimeline
               issues={issueData}
               selectedIssueId={selectedNode}
