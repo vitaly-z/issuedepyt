@@ -20,6 +20,13 @@ div.vertical-size-control-bar {
   gap: calc(var(--ring-unit));
 }
 
+/* Style navigation controls to look OK in dark mode as well. */
+div.vis-timeline {
+  background-color: white;
+  border-radius: var(--ring-border-radius);
+  border: 1px solid var(--ring-borders-color);
+}
+
 div.dep-timeline {
   margin-top: calc(var(--ring-unit) / 2);
   margin-bottom: calc(var(--ring-unit) / 2);
