@@ -29,8 +29,7 @@ const getColor = (
     const stateKey = Object.keys(stateFieldInfo.values).find(
       (x) => x.toLowerCase() === state.toLowerCase()
     );
-    const colorEntry =
-      stateKey != undefined ? stateFieldInfo.values[stateKey] : undefined;
+    const colorEntry = stateKey != undefined ? stateFieldInfo.values[stateKey] : undefined;
     if (colorEntry) {
       return {
         bg: colorEntry.background,
@@ -54,9 +53,7 @@ const getNodeLabel = (issue: IssueInfo): string => {
     flags.push(issue.state);
   }
   flags.push(
-    issue?.assignee !== undefined && issue.assignee.length > 0
-      ? "Assigned"
-      : "Unassigned"
+    issue?.assignee !== undefined && issue.assignee.length > 0 ? "Assigned" : "Unassigned"
   );
   if (flags.length > 0) {
     lines.push(`<code>[${flags.join(", ")}]</code>`);
@@ -96,8 +93,7 @@ const getGraphObjects = (
     ].map((link: IssueLink) => ({
       from: issue.id,
       to: link.targetId,
-      label:
-        link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
+      label: link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
       arrows: {
         from: {
           enabled: link.direction == "OUTWARD" && link.type == "Subtask",
@@ -109,8 +105,7 @@ const getGraphObjects = (
     // Filter stray nodes without any edges.
     .filter(
       (issue: IssueInfo) =>
-        issue.depth === 0 ||
-        edges.some((edge) => edge.from === issue.id || edge.to === issue.id)
+        issue.depth === 0 || edges.some((edge) => edge.from === issue.id || edge.to === issue.id)
     )
     // Transform issues to graph nodes.
     .map((issue: IssueInfo) => {
@@ -162,20 +157,11 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
   onOpenNode,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const network = useRef(null);
+  const data = useRef({ nodes: new DataSet(), edges: new DataSet() });
 
   useEffect(() => {
-    if (containerRef.current) {
-      console.log(`Rendering graph with ${Object.keys(issues).length} nodes`);
-      const { nodes, edges } = getGraphObjects(
-        issues,
-        fieldInfo,
-        useDepthRendering
-      );
-      const nodesDataSet = new DataSet(nodes);
-      // @ts-ignore
-      const edgesDataSet = new DataSet(edges);
-
-      const data = { nodes: nodesDataSet, edges: edgesDataSet };
+    if (containerRef.current && data.current) {
       const options = {
         physics: {
           stabilization: true,
@@ -258,39 +244,64 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
       };
 
       // @ts-ignore
-      let network = new Network(containerRef.current, data, options);
-      const selectedNode =
-        selectedIssueId != null && selectedIssueId in issues
-          ? issues[selectedIssueId]
-          : Object.values(issues).find((issue) => issue.depth === 0);
-      if (selectedNode) {
-        network.selectNodes([selectedNode.id]);
-        setSelectedNode(selectedNode.id);
-      }
+      let newNetwork = new Network(containerRef.current, data.current, options);
 
-      network.on("selectNode", (params) => {
+      newNetwork.on("selectNode", (params) => {
         const nodes = params.nodes;
         if (nodes.length > 0) {
           console.log(`Selecting node: ${nodes[0]}`);
           setSelectedNode(nodes[0]);
         }
       });
-      network.on("doubleClick", (params) => {
+      newNetwork.on("doubleClick", (params) => {
         const nodes = params.nodes;
         if (nodes.length > 0) {
           console.log(`Opening node: ${nodes[0]}`);
           onOpenNode(nodes[0]);
         }
       });
-      network;
+      // @ts-ignore
+      network.current = newNetwork;
     }
-  }, [
-    issues,
-    fieldInfo,
-    useDepthRendering,
-    maxNodeWidth,
-    useHierarchicalLayout,
-  ]);
+  }, [maxNodeWidth, useHierarchicalLayout]);
+
+  useEffect(() => {
+    if (network.current && data.current) {
+      console.log(`Rendering graph with ${Object.keys(issues).length} nodes`);
+      const { nodes, edges } = getGraphObjects(issues, fieldInfo, useDepthRendering);
+      data.current.nodes.clear();
+      data.current.nodes.add(nodes);
+      data.current.edges.clear();
+      data.current.edges.add(edges);
+      const selectedNode =
+        selectedIssueId != null && selectedIssueId in issues
+          ? issues[selectedIssueId]
+          : Object.values(issues).find((issue) => issue.depth === 0);
+      if (selectedNode) {
+        // @ts-ignore
+        network.current.selectNodes([selectedNode.id]);
+      }
+      // @ts-ignore
+      network.current.setData(data.current);
+    }
+  }, [issues, fieldInfo, useDepthRendering]);
+
+  useEffect(() => {
+    if (network.current && data.current) {
+      const selectedNode =
+        selectedIssueId != null && selectedIssueId in issues
+          ? issues[selectedIssueId]
+          : Object.values(issues).find((issue) => issue.depth === 0);
+      if (selectedNode) {
+        console.log(`Graph: Selecting issue ${selectedNode.id}`);
+        // @ts-ignore
+        network.current.selectNodes([selectedNode.id]);
+      } else {
+        // @ts-ignore
+        network.current.selectNodes([]);
+      }
+    }
+  }, [selectedIssueId]);
 
   return <div ref={containerRef} className="dep-graph" style={{ height }} />;
 };
