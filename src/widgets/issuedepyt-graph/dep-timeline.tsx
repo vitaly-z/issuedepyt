@@ -91,8 +91,21 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
             type: "box",
           } as TimelineItem)
       );
-      items.current.clear();
-      items.current.add(timelineItems);
+      const currentIds = items.current.getIds();
+      const idsToRemove = currentIds.filter((id) => !timelineItems.some((x) => x.id === id));
+      const itemsToAdd = timelineItems.filter((x) => !currentIds.includes(x.id));
+      const itemsToUpdate = timelineItems
+        .filter((x) => currentIds.includes(x.id))
+        .filter((x) => {
+          const currentItem = items.current.get(x.id);
+          return (
+            currentItem != undefined &&
+            (currentItem.content !== x.content || currentItem.start !== x.start)
+          );
+        });
+      items.current.remove(idsToRemove);
+      items.current.add(itemsToAdd);
+      items.current.updateOnly(itemsToUpdate);
       // @ts-ignore
       timeline.current.setItems(items.current);
       timeline.current.fit();
