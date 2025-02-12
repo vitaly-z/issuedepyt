@@ -83,9 +83,12 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
             issue.depth === 0 || relations.some((x) => x.from === issue.id || x.to === issue.id)
         );
       const stateColors = fieldInfo?.stateField ? fieldInfo.stateField.values : {};
-      const stateStyles = Object.fromEntries(Object.entries(stateColors).map(([k, v]) => [k,
-        `color: ${v.foreground}; background-color: ${v.background}`,
-      ]));
+      const stateStyles = Object.fromEntries(
+        Object.entries(stateColors).map(([k, v]) => [
+          k,
+          `color: ${v.foreground}; background-color: ${v.background}`,
+        ])
+      );
       const timelineItems: Array<TimelineItem> = visibleIssues.map(
         (issue) =>
           ({
@@ -93,7 +96,8 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
             content: `${issue.id}: ${issue.summary}`,
             start: issue.dueDate,
             type: "box",
-            style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
+            style:
+              issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
           } as TimelineItem)
       );
       const currentIds = items.current.getIds();
