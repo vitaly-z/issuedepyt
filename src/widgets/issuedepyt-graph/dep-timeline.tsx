@@ -65,8 +65,24 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
   useEffect(() => {
     if (timeline.current && items.current) {
       console.log(`Rendering timeline with ${Object.keys(issues).length} nodes`);
-      const issuesWithDueDate = Object.values(issues).filter((x) => x?.dueDate);
-      const timelineItems: Array<TimelineItem> = issuesWithDueDate.map(
+      const relations = Object.values(issues).flatMap((issue: IssueInfo) =>
+        [
+          ...(issue.showUpstream ? issue.upstreamLinks : []),
+          ...(issue.showDownstream ? issue.downstreamLinks : []),
+        ].map((link: IssueLink) => ({
+          from: issue.id,
+          to: link.targetId,
+        }))
+      );
+      const visibleIssues = Object.values(issues)
+        // Only show issues with a due date.
+        .filter((x) => x?.dueDate)
+        // Only show issues that's shown in the dependency graph, i.e. that they have a visible relation.
+        .filter(
+          (issue: IssueInfo) =>
+            issue.depth === 0 || relations.some((x) => x.from === issue.id || x.to === issue.id)
+        );
+      const timelineItems: Array<TimelineItem> = visibleIssues.map(
         (issue) =>
           ({
             id: issue.id,
