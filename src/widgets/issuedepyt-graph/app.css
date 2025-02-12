@@ -21,7 +21,15 @@ div.vertical-size-control-bar {
 }
 
 .vis-time-axis .vis-grid.vis-odd {
-  background: var(--ring-hover-background-color);
+  background: #edf3ff; /* --ring-hover-background-color */
+}
+
+.vis-item {
+  border-color: #6c707e !important; /* --ring-secondary-color */
+}
+.vis-item.vis-selected {
+  border-color: #27282e !important; /* --ring-text-color */
+  box-shadow: 0 0 5px gray;
 }
 
 /* Style navigation controls to look OK in dark mode as well. */

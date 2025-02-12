@@ -111,3 +111,23 @@ export const COLOR_PALETTE: ColorPaletteItem[] = [
   /* 34 */ { fg: "#fff", bg: "#553000" },
   /* 35 */ { fg: "#fff", bg: "#1a1a1a" },
 ];
+
+export const hexToRgb = (color: string): [number, number, number] | undefined => {
+  const hexColor = color.trim().replace("#", "");
+  if (hexColor.length === 6) {
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4), 16);
+    return [r, g, b];
+  } else if (hexColor.length === 3) {
+    const r = parseInt(hexColor.substring(0, 1), 16) * 16;
+    const g = parseInt(hexColor.substring(1, 2), 16) * 16;
+    const b = parseInt(hexColor.substring(2), 16) * 16;
+    return [r, g, b];
+  }
+  return undefined;
+};
+
+export const rgbToHex = (rgb: Array<number>): string => {
+  return "#" + rgb.map((x) => x.toString(16).padStart(2, "0")).join("");
+};

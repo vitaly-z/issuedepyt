@@ -3,7 +3,7 @@ import { DataSet } from "vis-data/peer/esm/vis-data";
 import { Network } from "vis-network/standalone/esm/vis-network";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
-import { ColorPaletteItem } from "./colors";
+import { ColorPaletteItem, Color, hexToRgb, rgbToHex } from "./colors";
 
 interface DepGraphProps {
   height: string;
@@ -39,6 +39,24 @@ const getColor = (
   }
 
   return undefined;
+};
+
+const getSelectedColor = (colorEntry: ColorPaletteItem): ColorPaletteItem => {
+  // Check if bright or dark color by checking the intensity of the foreground color.
+  const fgRgb = hexToRgb(colorEntry.fg);
+  const bgRgb = hexToRgb(colorEntry.bg);
+  if (fgRgb == undefined || bgRgb == undefined) {
+    return colorEntry;
+  }
+  const fgIntensity = fgRgb.reduce((acc, x) => acc + x, 0) / 3;
+  const adjustment = fgIntensity > 128 ? 0.05 : -0.05;
+  const background = bgRgb.map((x) =>
+    Math.min(255, Math.max(0, Math.round(x + x * adjustment)))
+  );
+  return {
+    bg: rgbToHex(background),
+    fg: colorEntry.fg,
+  };
 };
 
 const getNodeLabel = (issue: IssueInfo): string => {
@@ -127,7 +145,12 @@ const getGraphObjects = (
       }
       if (colorEntry) {
         node.font = { color: colorEntry.fg };
-        node.color = colorEntry.bg;
+        node.color = {
+          background: colorEntry.bg,
+          highlight: {
+            background: getSelectedColor(colorEntry).bg,
+          },
+        };
       }
       if (issue.depth == 0) {
         node.borderWidth = 2;
@@ -206,6 +229,12 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
               face: FONT_FAMILY_MONOSPACE,
             },
           },
+          color: {
+            border: Color.SecondaryColor,
+            highlight: {
+              border: Color.TextColor,
+            },
+          },
           widthConstraint: {
             maximum: maxNodeWidth,
           },
@@ -218,9 +247,9 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
             size: 10,
           },
           color: {
-            color: "#878787",
-            highlight: "#878787",
-            hover: "#bababa",
+            color: Color.LinkColor,
+            highlight: Color.LinkHoverColor,
+            hover: Color.LinkColor,
             opacity: 1,
           },
           arrows: {
