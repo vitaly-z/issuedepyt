@@ -20,6 +20,10 @@ div.vertical-size-control-bar {
   gap: calc(var(--ring-unit));
 }
 
+.vis-time-axis .vis-grid.vis-odd {
+  background: var(--ring-hover-background-color);
+}
+
 /* Style navigation controls to look OK in dark mode as well. */
 div.vis-timeline {
   background-color: white;
