@@ -128,7 +128,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
     }
   }, [selectedIssueId]);
 
-  return <div ref={containerRef} className="dep-graph" />;
+  return <div ref={containerRef} className="dep-timeline" />;
 };
 
 export default DepTimeline;

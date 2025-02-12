@@ -3,6 +3,8 @@ import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
+import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
+import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import LoaderInline from "@jetbrains/ring-ui-built/components/loader-inline/loader-inline";
 import UpdateIcon from "@jetbrains/icons/update";
 import DownloadIcon from "@jetbrains/icons/download";
@@ -235,7 +237,7 @@ const AppComponent: React.FunctionComponent = () => {
       )}
       {graphVisible && (
         <div>
-          <Group>
+          <div className="dep-toolbar">
             {loading && (
               <LoaderInline>
                 <Text size={Text.Size.S} info>
@@ -295,30 +297,30 @@ const AppComponent: React.FunctionComponent = () => {
                 )}
               </Group>
             )}
-            <span className="extra-margin-left">
-              <Group>
-                <Checkbox
-                  label="Show timeline"
-                  checked={timelineVisible}
-                  onChange={(e: any) => setTimelineVisible(e.target.checked)}
-                />
-              </Group>
-            </span>
-            <div style={{ float: "right" }}>
+            <span className="dep-toolbar-right">
               <Group>
                 {!loading && (
-                  <Group>
-                    <Text size={Text.Size.S} info>
-                      Nodes: {getNumIssues(issueData)}.
-                    </Text>
-                    <Text size={Text.Size.S} info>
-                      Depth: {getMaxDepth(issueData)}.
-                    </Text>
-                  </Group>
+                  <span className="extra-margin-right">
+                    <Group>
+                      <Text size={Text.Size.S} info>
+                        Nodes: {getNumIssues(issueData)}.
+                      </Text>
+                      <Text size={Text.Size.S} info>
+                        Depth: {getMaxDepth(issueData)}.
+                      </Text>
+                    </Group>
+                  </span>
                 )}
                 <Button onClick={refreshData} icon={UpdateIcon}>
                   Reload
                 </Button>
+                <Toggle
+                  size={ToggleSize.Size14}
+                  checked={timelineVisible}
+                  onChange={(e: any) => setTimelineVisible(e.target.checked)}
+                >
+                  Show timeline
+                </Toggle>
                 <OptionsDropdownMenu
                   maxDepth={maxDepth}
                   maxNodeWidth={maxNodeWidth}
@@ -334,8 +336,8 @@ const AppComponent: React.FunctionComponent = () => {
                   setFollowDownstream={setFollowDownstream}
                 />
               </Group>
-            </div>
-          </Group>
+            </span>
+          </div>
           {timelineVisible && Object.keys(issueData).length > 0 && (
             <DepTimeline
               issues={issueData}
