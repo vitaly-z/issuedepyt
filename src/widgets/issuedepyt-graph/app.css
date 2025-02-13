@@ -43,9 +43,12 @@ div.vertical-size-control-bar {
 .vis-item {
   border-color: #6c707e !important; /* --ring-secondary-color */
 }
+.vis-item.overdue {
+  box-shadow: 0 0 4px #a46704;
+}
 .vis-item.vis-selected {
   border-color: #27282e !important; /* --ring-text-color */
-  box-shadow: 0 0 5px gray;
+  box-shadow: 0 0 6px gray;
 }
 
 /* Style navigation controls to look OK in dark mode as well. */

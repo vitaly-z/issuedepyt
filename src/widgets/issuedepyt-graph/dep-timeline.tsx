@@ -12,6 +12,7 @@ import type {
 } from "vis-timeline/types";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
+import { durationToDays, isPastDate } from "./time-utils";
 import { ColorPaletteItem } from "./colors";
 
 interface DepTimelineProps {
@@ -26,6 +27,29 @@ interface DepTimelineProps {
 const FONT_FAMILY = "system-ui, Arial, sans-serif";
 const FONT_FAMILY_MONOSPACE =
   'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
+
+const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
+  let lines = [];
+  if (issue?.dueDate) {
+    const today = new Date();
+    if (isOverdue) {
+      // Due date was in the past.
+      const daysAgo = durationToDays(today.getTime()) - durationToDays(issue.dueDate.getTime());
+      const maybeS = daysAgo > 1 ? "s" : "";
+      lines.push(`${issue.id} is overdue!`);
+      lines.push(`Due date was ${daysAgo} day${maybeS} ago on ${issue.dueDate.toDateString()}.`);
+    } else {
+      // Due date is future.
+      const daysUntil = durationToDays(issue.dueDate.getTime()) - durationToDays(today.getTime());
+      const maybeS = daysUntil > 1 ? "s" : "";
+      lines.push(
+        `${issue.id} due date is in ${daysUntil} day${maybeS} on ${issue.dueDate.toDateString()}.`
+      );
+    }
+  }
+
+  return lines.join("<br/>");
+};
 
 const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
   issues,
@@ -89,17 +113,19 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
           `color: ${v.foreground}; background-color: ${v.background}`,
         ])
       );
-      const timelineItems: Array<TimelineItem> = visibleIssues.map(
-        (issue) =>
-          ({
-            id: issue.id,
-            content: `${issue.id}: ${issue.summary}`,
-            start: issue.dueDate,
-            type: "box",
-            style:
-              issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
-          } as TimelineItem)
-      );
+      const timelineItems: Array<TimelineItem> = visibleIssues.map((issue) => {
+        const isOverdue = !issue.resolved && isPastDate(issue.dueDate as Date);
+        const warningSign = isOverdue ? "&nbsp;⚠️" : "";
+        return {
+          id: issue.id,
+          content: `${issue.id}: ${issue.summary}${warningSign}`,
+          title: getTooltip(issue, isOverdue),
+          start: issue.dueDate,
+          type: "box",
+          className: isOverdue ? "overdue" : null,
+          style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
+        } as TimelineItem;
+      });
       const currentIds = items.current.getIds();
       const idsToRemove = currentIds.filter((id) => !timelineItems.some((x) => x.id === id));
       const itemsToAdd = timelineItems.filter((x) => !currentIds.includes(x.id));
