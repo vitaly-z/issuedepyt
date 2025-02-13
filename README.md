@@ -62,6 +62,13 @@ for this field is `State`.
 Set to the name of the field in the project representing the issue assignee. The YouTrack default
 name for this field is `Assignee`.
 
+##### Due Date field name
+
+Set to the name of the field in the project representing the issue Due Date. The YouTrack default
+name for this field is `Due Date`.
+
+The Due Date field is used to visualize issues in a timeline.
+
 ##### Upstream relations
 
 Comma-separated list of upstream relations. Each relation is given as the pair `direction:type`
