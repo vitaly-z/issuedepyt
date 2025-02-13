@@ -50,9 +50,7 @@ const getSelectedColor = (colorEntry: ColorPaletteItem): ColorPaletteItem => {
   }
   const fgIntensity = fgRgb.reduce((acc, x) => acc + x, 0) / 3;
   const adjustment = fgIntensity > 128 ? 0.05 : -0.05;
-  const background = bgRgb.map((x) =>
-    Math.min(255, Math.max(0, Math.round(x + x * adjustment)))
-  );
+  const background = bgRgb.map((x) => Math.min(255, Math.max(0, Math.round(x + x * adjustment))));
   return {
     bg: rgbToHex(background),
     fg: colorEntry.fg,
@@ -148,7 +146,7 @@ const getGraphObjects = (
         node.color = {
           background: colorEntry.bg,
           highlight: {
-            background: getSelectedColor(colorEntry).bg,
+            background: colorEntry.bg, // getSelectedColor(colorEntry).bg,
           },
         };
       }
