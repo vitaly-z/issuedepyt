@@ -2,7 +2,7 @@ export type DurationMs = number;
 export type DurationDays = number;
 
 export const isPastDate = (date: Date): boolean => {
-  return (new Date()).getTime() > date.getTime();
+  return new Date().getTime() > date.getTime();
 };
 
 export const getDuration = (firstDate: Date, secondDate: Date): DurationMs => {
