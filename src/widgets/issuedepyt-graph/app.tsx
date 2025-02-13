@@ -112,7 +112,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
   const [timelineVisible, setTimelineVisible] = useState<boolean>(false);
   const [graphHeight, setGraphHeight] = useState<number>(400);
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<string | null>(issue.id);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
