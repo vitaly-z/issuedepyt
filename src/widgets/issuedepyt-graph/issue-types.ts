@@ -24,6 +24,7 @@ export interface IssueInfo {
   summary: string;
   state?: string;
   assignee?: string;
+  dueDate: Date | null;
   resolved: boolean;
   depth: number; // Root node has depth 0.
   upstreamLinks: Array<IssueLink>;

@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import type { IssueInfo, IssueLink } from "./issue-types";
-import Island, {
-  Header,
-  Content,
-} from "@jetbrains/ring-ui-built/components/island/island";
+import Island, { Header, Content } from "@jetbrains/ring-ui-built/components/island/island";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
 import Tag from "@jetbrains/ring-ui-built/components/tag/tag";
@@ -18,9 +15,7 @@ interface IssueInfoCardProps {
   issue: IssueInfo;
 }
 
-const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({
-  issue,
-}) => {
+const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) => {
   const [collapsed, setCollapsed] = useState<boolean>(true);
 
   const title = issue?.summary ? `${issue.id}: ${issue.summary}` : issue.id;
@@ -112,6 +107,16 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({
                       </Text>
                       <div>
                         <Text size={Text.Size.M}>{issue.assignee}</Text>
+                      </div>
+                    </p>
+                  )}
+                  {issue?.dueDate && (
+                    <p>
+                      <Text size={Text.Size.S} info>
+                        Due Date
+                      </Text>
+                      <div>
+                        <Text size={Text.Size.M}>{issue.dueDate.toDateString()}</Text>
                       </div>
                     </p>
                   )}

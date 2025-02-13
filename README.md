@@ -6,15 +6,46 @@ YouTrack app to visualize issue dependencies. The issue dependencies are visuali
 tree including configured upstream and/or downstream relations. This allows for e.g. visualizing
 *all* upstream issues that an issue depend on including all subtasks and issues depended on.
 
+Optionally the issues visible in the graph that also has a *Due Date* set can be visualized on a
+time-line. This helps when for example trying to understand if all upstream issues has *Due Dates*
+aligned with the current issue. It also helps the other way around, i.e. when trying to understand
+if any downstream issue (dependent issue) has a *Due Date* that infers an implicit deadline to the
+current issue.
+
 Any custom YouTrack Issue Link Types are also supported.
 
-Dependencies are visualized as a graph or tree using [vis.js](visjs.org).
+Visualization is performed using [vis.js] components [vis-network] and [vis-timeline].
+
+[vis.js]: https://visjs.org/
+[vis-network]: https://github.com/visjs/vis-network
+[vis-timeline]: https://github.com/visjs/vis-timeline
 
 ## Screenshots
 
-![Small tree](./doc/assets/screenshot_tree.png)
-![Large tree](./doc/assets/screenshot_tree_large.png)
-![Large graph](./doc/assets/screenshot_graph.png)
+### Tree with issue preview open
+
+![Tree](./doc/assets/screenshot_tree.png)
+
+Note that tree root element SAN-3 is selected.
+
+### Tree with due date timeline open
+
+
+![Tree with timeline](./doc/assets/screenshot_tree_timeline.png)
+
+Note the warning signs for the two unresolved issues that are overdue.
+
+### Alternate rendering as a node graph
+
+![Graph](./doc/assets/screenshot_graph.png)
+
+### Visualizing downstream dependencies with due date timeline
+
+![Downstream graph with timeline](./doc/assets/screenshot_graph_timeline_downstream.png)
+
+Visualizing all downstream dependencies of SAN-33. Note that SAN-33 has a due date which is not
+aligned with the two downstream (dependent) issues SAN-20 and SAN-11. The SAN-3 due date is aligned
+though.
 
 ## Installation and Setup
 
@@ -61,6 +92,13 @@ for this field is `State`.
 
 Set to the name of the field in the project representing the issue assignee. The YouTrack default
 name for this field is `Assignee`.
+
+##### Due Date field name
+
+Set to the name of the field in the project representing the issue Due Date. The YouTrack default
+name for this field is `Due Date`.
+
+The Due Date field is used to visualize issues in a timeline.
 
 ##### Upstream relations
 

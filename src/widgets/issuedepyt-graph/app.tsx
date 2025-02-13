@@ -3,6 +3,8 @@ import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
+import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
+import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import LoaderInline from "@jetbrains/ring-ui-built/components/loader-inline/loader-inline";
 import UpdateIcon from "@jetbrains/icons/update";
 import DownloadIcon from "@jetbrains/icons/download";
@@ -13,6 +15,7 @@ import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
 import type { FollowDirection, FollowDirections } from "./fetch-deps";
 import type { IssueInfo, Relation, Relations, DirectionType } from "./issue-types";
 import DepGraph from "./dep-graph";
+import DepTimeline from "./dep-timeline";
 import IssueInfoCard from "./issue-info-card";
 import OptionsDropdownMenu from "./options-dropdown-menu";
 import VerticalSizeControl from "./vertical-size-control";
@@ -107,8 +110,9 @@ const AppComponent: React.FunctionComponent = () => {
     downstream: [],
   });
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
+  const [timelineVisible, setTimelineVisible] = useState<boolean>(false);
   const [graphHeight, setGraphHeight] = useState<number>(400);
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<string | null>(issue.id);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
@@ -233,7 +237,7 @@ const AppComponent: React.FunctionComponent = () => {
       )}
       {graphVisible && (
         <div>
-          <Group>
+          <div className="dep-toolbar">
             {loading && (
               <LoaderInline>
                 <Text size={Text.Size.S} info>
@@ -293,21 +297,39 @@ const AppComponent: React.FunctionComponent = () => {
                 )}
               </Group>
             )}
-            <div style={{ float: "right" }}>
+            <span className="dep-toolbar-right">
               <Group>
                 {!loading && (
-                  <Group>
-                    <Text size={Text.Size.S} info>
-                      Nodes: {getNumIssues(issueData)}.
-                    </Text>
-                    <Text size={Text.Size.S} info>
-                      Depth: {getMaxDepth(issueData)}.
-                    </Text>
-                  </Group>
+                  <span className="extra-margin-right">
+                    <Group>
+                      <Text size={Text.Size.S} info>
+                        Nodes: {getNumIssues(issueData)}.
+                      </Text>
+                      <Text size={Text.Size.S} info>
+                        Depth: {getMaxDepth(issueData)}.
+                      </Text>
+                    </Group>
+                  </span>
                 )}
                 <Button onClick={refreshData} icon={UpdateIcon}>
                   Reload
                 </Button>
+                <span
+                  title={
+                    !settings?.dueDateField
+                      ? "No due date field configured for project!"
+                      : undefined
+                  }
+                >
+                  <Toggle
+                    size={ToggleSize.Size14}
+                    checked={timelineVisible}
+                    onChange={(e: any) => setTimelineVisible(e.target.checked)}
+                    disabled={!settings?.dueDateField}
+                  >
+                    Show timeline
+                  </Toggle>
+                </span>
                 <OptionsDropdownMenu
                   maxDepth={maxDepth}
                   maxNodeWidth={maxNodeWidth}
@@ -323,8 +345,18 @@ const AppComponent: React.FunctionComponent = () => {
                   setFollowDownstream={setFollowDownstream}
                 />
               </Group>
-            </div>
-          </Group>
+            </span>
+          </div>
+          {timelineVisible && Object.keys(issueData).length > 0 && (
+            <DepTimeline
+              issues={issueData}
+              selectedIssueId={selectedNode}
+              fieldInfo={fieldInfo}
+              maxNodeWidth={maxNodeWidth}
+              setSelectedNode={setSelectedNode}
+              onOpenNode={openNode}
+            />
+          )}
           {Object.keys(issueData).length > 0 && (
             <DepGraph
               height={`${graphHeight}px`}
