@@ -314,13 +314,22 @@ const AppComponent: React.FunctionComponent = () => {
                 <Button onClick={refreshData} icon={UpdateIcon}>
                   Reload
                 </Button>
-                <Toggle
-                  size={ToggleSize.Size14}
-                  checked={timelineVisible}
-                  onChange={(e: any) => setTimelineVisible(e.target.checked)}
+                <span
+                  title={
+                    !settings?.dueDateField
+                      ? "No due date field configured for project!"
+                      : undefined
+                  }
                 >
-                  Show timeline
-                </Toggle>
+                  <Toggle
+                    size={ToggleSize.Size14}
+                    checked={timelineVisible}
+                    onChange={(e: any) => setTimelineVisible(e.target.checked)}
+                    disabled={!settings?.dueDateField}
+                  >
+                    Show timeline
+                  </Toggle>
+                </span>
                 <OptionsDropdownMenu
                   maxDepth={maxDepth}
                   maxNodeWidth={maxNodeWidth}
