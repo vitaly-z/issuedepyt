@@ -17,11 +17,10 @@ interface OptionsDropdownMenuProps {
   setUseDepthRendering: (value: boolean) => void;
   setFollowUpstream: (value: boolean) => void;
   setFollowDownstream: (value: boolean) => void;
+  onExportRelations: () => void;
 }
 
-const OptionsDropdownMenu: React.FunctionComponent<
-  OptionsDropdownMenuProps
-> = ({
+const OptionsDropdownMenu: React.FunctionComponent<OptionsDropdownMenuProps> = ({
   maxDepth,
   maxNodeWidth,
   useHierarchicalLayout,
@@ -34,6 +33,7 @@ const OptionsDropdownMenu: React.FunctionComponent<
   setUseDepthRendering,
   setFollowUpstream,
   setFollowDownstream,
+  onExportRelations,
 }) => {
   return (
     <DropdownMenu
@@ -111,6 +111,18 @@ const OptionsDropdownMenu: React.FunctionComponent<
               checked={followDownstream}
               onChange={(e: any) => setFollowDownstream(e.target.checked)}
             />
+          ),
+        },
+        {
+          rgItemType: DropdownMenu.ListProps.Type.TITLE,
+          label: "Export",
+        },
+        {
+          rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+          template: (
+            <Button inline onClick={() => onExportRelations()}>
+              Export relations
+            </Button>
           ),
         },
       ]}
