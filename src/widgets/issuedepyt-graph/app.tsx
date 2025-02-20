@@ -105,14 +105,16 @@ const getRelations = (settings: Settings): Relations | null => {
 const exportRelations = (issue_id: string, issues: { [key: string]: IssueInfo }): void => {
   const cols = [
     "id",
+    "type",
     "state",
+    "summary",
     "assignee",
     "dueDate",
     "resolved",
     "depth",
     "relTargetId",
     "relType",
-    "relationName",
+    "relName",
     "relDirectionType",
   ];
   const createIssueRows = (issue: IssueInfo): string[] => {
@@ -120,7 +122,9 @@ const exportRelations = (issue_id: string, issues: { [key: string]: IssueInfo })
     const issueCols = (issue: IssueInfo, link: IssueLink, direction: string): string => {
       return [
         issue.id,
+        issue?.type ? issue.type : "",
         issue?.state ? issue.state : "",
+        issue?.summary ? issue.summary : "",
         issue?.assignee ? issue.assignee : "",
         issue.dueDate ? issue.dueDate.toISOString() : "",
         !!issue.resolved,
