@@ -1,11 +1,15 @@
 import React, { memo, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
+import Icon from "@jetbrains/ring-ui-built/components/icon/icon";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
 import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
+import Tooltip from "@jetbrains/ring-ui-built/components/tooltip/tooltip";
+import Theme from "@jetbrains/ring-ui-built/components/global/theme";
 import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import LoaderInline from "@jetbrains/ring-ui-built/components/loader-inline/loader-inline";
+import InfoIcon from "@jetbrains/icons/info";
 import UpdateIcon from "@jetbrains/icons/update";
 import DownloadIcon from "@jetbrains/icons/download";
 import type { HostAPI } from "../../../@types/globals";
@@ -370,27 +374,13 @@ const AppComponent: React.FunctionComponent = () => {
             )}
             <span className="dep-toolbar-right">
               <Group>
-                {!loading && (
-                  <span className="extra-margin-right">
-                    <Group>
-                      <Text size={Text.Size.S} info>
-                        Nodes: {getNumIssues(issueData)}.
-                      </Text>
-                      <Text size={Text.Size.S} info>
-                        Depth: {getMaxDepth(issueData)}.
-                      </Text>
-                    </Group>
-                  </span>
-                )}
-                <Button onClick={refreshData} icon={UpdateIcon}>
-                  Reload
-                </Button>
-                <span
+                <Tooltip
                   title={
                     !settings?.dueDateField
                       ? "No due date field configured for project!"
                       : undefined
                   }
+                  theme={Theme.LIGHT}
                 >
                   <Toggle
                     size={ToggleSize.Size14}
@@ -400,7 +390,24 @@ const AppComponent: React.FunctionComponent = () => {
                   >
                     Show timeline
                   </Toggle>
+                </Tooltip>
+                <span className="extra-margin-left">
+                  <Tooltip
+                    title={
+                      loading
+                        ? "Loading..."
+                        : `Graph with ${getNumIssues(issueData)} nodes and a depth of ${getMaxDepth(
+                            issueData
+                          )}.`
+                    }
+                    theme={Theme.LIGHT}
+                  >
+                    <Icon glyph={InfoIcon} />
+                  </Tooltip>
                 </span>
+                <Tooltip title="Reload data" theme={Theme.LIGHT}>
+                  <Button onClick={refreshData} icon={UpdateIcon} />
+                </Tooltip>
                 <OptionsDropdownMenu
                   maxDepth={maxDepth}
                   maxNodeWidth={maxNodeWidth}
