@@ -3,6 +3,9 @@ import DropdownMenu from "@jetbrains/ring-ui-built/components/dropdown-menu/drop
 import Input from "@jetbrains/ring-ui-built/components/input/input";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
+import MoreOptionsIcon from "@jetbrains/icons/more-options";
+import Tooltip from "@jetbrains/ring-ui-built/components/tooltip/tooltip";
+import Theme from "@jetbrains/ring-ui-built/components/global/theme";
 
 interface OptionsDropdownMenuProps {
   maxDepth: number;
@@ -38,9 +41,9 @@ const OptionsDropdownMenu: React.FunctionComponent<OptionsDropdownMenuProps> = (
   return (
     <DropdownMenu
       anchor={
-        <Button dropdown inline>
-          Options
-        </Button>
+        <Tooltip title="Show more" theme={Theme.LIGHT}>
+          <Button inline icon={MoreOptionsIcon} />
+        </Tooltip>
       }
       data={[
         {
