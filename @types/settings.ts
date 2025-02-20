@@ -1,4 +1,5 @@
 export type Settings = {
+  typeField?: string;
   stateField?: string;
   assigneeField?: string;
   dueDateField?: string;

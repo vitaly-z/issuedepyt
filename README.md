@@ -83,10 +83,16 @@ relations are known are visualized with a dashed border.
 
 #### Per project app settings
 
+##### Type field name
+
+Set to the name of the field in the project representing the issue type. The YouTrack default name
+for this field is `Type`.
+
 ##### State field name
 
 Set to the name of the field in the project representing the issue state. The YouTrack default name
-for this field is `State`.
+for this field is `State`. Note that colors from the state values will be used when visualizing the
+tickets.
 
 ##### Assignee field name
 

@@ -90,6 +90,16 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
             <Grid>
               <Row>
                 <Col xs={3}>
+                  {issue?.type != undefined && (
+                    <p>
+                      <Text size={Text.Size.S} info>
+                        Type
+                      </Text>
+                      <div>
+                        <Text size={Text.Size.M}>{issue.type}</Text>
+                      </div>
+                    </p>
+                  )}
                   {issue?.state != undefined && (
                     <p>
                       <Text size={Text.Size.S} info>

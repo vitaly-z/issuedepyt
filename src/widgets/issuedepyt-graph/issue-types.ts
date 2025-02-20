@@ -22,6 +22,7 @@ export interface IssueLink {
 export interface IssueInfo {
   id: string;
   summary: string;
+  type?: string;
   state?: string;
   assignee?: string;
   dueDate: Date | null;

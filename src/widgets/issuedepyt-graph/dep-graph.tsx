@@ -58,11 +58,16 @@ const getSelectedColor = (colorEntry: ColorPaletteItem): ColorPaletteItem => {
 };
 
 const getNodeLabel = (issue: IssueInfo): string => {
+  let lines = [];
+  if (issue?.type) {
+    lines.push(`<i><< ${issue.type} >></i>`);
+  }
+
   let summary = "" + issue.id;
   if (issue?.summary) {
     summary = `<b>${summary}: ${issue.summary}</b>`;
   }
-  let lines = [summary];
+  lines.push(summary);
 
   let flags = [];
   if (issue?.state) {
@@ -84,6 +89,9 @@ const getNodeLabel = (issue: IssueInfo): string => {
 const getNodeTooltip = (issue: IssueInfo): string => {
   let lines = [];
   lines.push(`${issue.id}`);
+  if (issue?.type) {
+    lines.push(`Type: ${issue.type}`);
+  }
   if (issue?.state) {
     lines.push(`State: ${issue.state}`);
   }

@@ -4,6 +4,14 @@
   "title": "Issue dependency graph",
   "description": "Settings for issue dependency graph.",
   "properties": {
+    "typeField": {
+      "type": "string",
+      "title": "Type field name",
+      "description": "Name of the type field.",
+      "default": "Type",
+      "minLength": 1,
+      "x-scope": "PROJECT"
+    },
     "stateField": {
       "type": "string",
       "title": "State field name",
