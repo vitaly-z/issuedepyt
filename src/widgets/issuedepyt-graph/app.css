@@ -43,6 +43,9 @@ div.vertical-size-control-bar {
 .vis-item {
   border-color: #6c707e !important; /* --ring-secondary-color */
 }
+.vis-item .vis-item-overflow {
+  overflow: visible !important;
+}
 .vis-item.overdue {
   box-shadow: 0 0 4px #a46704;
 }

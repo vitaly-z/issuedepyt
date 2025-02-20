@@ -25,6 +25,7 @@ export interface IssueInfo {
   type?: string;
   state?: string;
   assignee?: string;
+  startDate: Date | null;
   dueDate: Date | null;
   resolved: boolean;
   depth: number; // Root node has depth 0.

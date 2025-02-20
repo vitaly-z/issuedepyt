@@ -8,6 +8,7 @@ import type {
   TimelineAnimationOptions,
   TimelineGroup,
   TimelineItem,
+  TimelineItemType,
   TimelineOptions,
 } from "vis-timeline/types";
 import type { IssueInfo, IssueLink } from "./issue-types";
@@ -44,6 +45,26 @@ const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
       const maybeS = daysUntil > 1 ? "s" : "";
       lines.push(
         `${issue.id} due date is in ${daysUntil} day${maybeS} on ${issue.dueDate.toDateString()}.`
+      );
+    }
+  }
+  if (issue?.startDate) {
+    const today = new Date();
+    if (today.getTime() > issue.startDate.getTime()) {
+      // Start date was in the past.
+      const daysAgo = durationToDays(today.getTime()) - durationToDays(issue.startDate.getTime());
+      const maybeS = daysAgo > 1 ? "s" : "";
+      lines.push(
+        `${issue.id} start date was ${daysAgo} day${maybeS} ago on ${issue.startDate.toDateString()}.`
+      );
+    } else {
+      // Start date is in the future.
+      const daysUntil = durationToDays(issue.startDate.getTime()) - durationToDays(today.getTime());
+      const maybeS = daysUntil > 1 ? "s" : "";
+      lines.push(
+        `${
+          issue.id
+        } start date is in ${daysUntil} day${maybeS} on ${issue.startDate.toDateString()}.`
       );
     }
   }
@@ -99,8 +120,8 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
         }))
       );
       const visibleIssues = Object.values(issues)
-        // Only show issues with a due date.
-        .filter((x) => x?.dueDate)
+        // Only show issues with a due date or start date.
+        .filter((x) => x?.dueDate || x?.startDate)
         // Only show issues that's shown in the dependency graph, i.e. that they have a visible relation.
         .filter(
           (issue: IssueInfo) =>
@@ -114,17 +135,31 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
         ])
       );
       const timelineItems: Array<TimelineItem> = visibleIssues.map((issue) => {
-        const isOverdue = !issue.resolved && isPastDate(issue.dueDate as Date);
+        const isOverdue = !issue.resolved && !!issue.dueDate && isPastDate(issue.dueDate as Date);
         const warningSign = isOverdue ? "&nbsp;⚠️" : "";
-        return {
+        const timePeriod: {
+          start: Date | undefined;
+          end: Date | undefined;
+          type: TimelineItemType;
+        } = { start: undefined, end: undefined, type: "box" };
+        if (issue.dueDate && issue.startDate) {
+          timePeriod.start = issue.startDate;
+          timePeriod.end = issue.dueDate;
+          timePeriod.type = "range";
+        } else if (issue.dueDate) {
+          timePeriod.start = issue.dueDate;
+        } else if (issue.startDate) {
+          timePeriod.start = issue.startDate;
+        }
+        const item: TimelineItem = {
           id: issue.id,
           content: `${issue.id}: ${issue.summary}${warningSign}`,
           title: getTooltip(issue, isOverdue),
-          start: issue.dueDate,
-          type: "box",
-          className: isOverdue ? "overdue" : null,
+          className: isOverdue ? "overdue" : undefined,
           style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
-        } as TimelineItem;
+          ...(timePeriod as { start: DateType; end: DateType | undefined; type: TimelineItemType }),
+        };
+        return item;
       });
       const currentIds = items.current.getIds();
       const idsToRemove = currentIds.filter((id) => !timelineItems.some((x) => x.id === id));

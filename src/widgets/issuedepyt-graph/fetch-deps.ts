@@ -121,6 +121,7 @@ async function fetchDepsRecursive(
       type: getCustomFieldValue(settings?.typeField, issue.customFields)?.name,
       state: getCustomFieldValue(settings?.stateField, issue.customFields)?.name,
       assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)?.name,
+      startDate: getCustomFieldValue(settings?.startDateField, issue.customFields),
       dueDate: getCustomFieldValue(settings?.dueDateField, issue.customFields),
       resolved: issue.resolved,
       direction: link.direction,
@@ -168,6 +169,7 @@ async function fetchDepsRecursive(
         type: link.type,
         state: link.state,
         assignee: link.assignee,
+        startDate: link.startDate ? new Date(link.startDate) : null,
         dueDate: link.dueDate ? new Date(link.dueDate) : null,
         resolved: link.resolved,
         depth: link.depth,
@@ -259,12 +261,14 @@ export async function fetchIssueAndInfo(
   }
 
   const dueDateValue = getCustomFieldValue(settings?.dueDateField, issueInfo.customFields);
+  const startDateValue = getCustomFieldValue(settings?.startDateField, issueInfo.customFields);
   const issue: IssueInfo = {
     id: issueInfo.idReadable,
     summary: issueInfo.summary,
     type: getCustomFieldValue(settings?.typeField, issueInfo.customFields)?.name,
     state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
     assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
+    startDate: startDateValue ? new Date(startDateValue) : null,
     dueDate: dueDateValue ? new Date(dueDateValue) : null,
     resolved: issueInfo.resolved,
     depth: 0,

@@ -28,6 +28,13 @@
       "minLength": 1,
       "x-scope": "PROJECT"
     },
+    "startDateField": {
+      "type": "string",
+      "title": "Start date field name",
+      "description": "Name of the field denoting when a ticket is planned to start.",
+      "minLength": 1,
+      "x-scope": "PROJECT"
+    },
     "dueDateField": {
       "type": "string",
       "title": "Due Date field name",
