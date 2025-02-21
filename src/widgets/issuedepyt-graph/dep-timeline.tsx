@@ -55,7 +55,9 @@ const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
       const daysAgo = durationToDays(today.getTime()) - durationToDays(issue.startDate.getTime());
       const maybeS = daysAgo > 1 ? "s" : "";
       lines.push(
-        `${issue.id} start date was ${daysAgo} day${maybeS} ago on ${issue.startDate.toDateString()}.`
+        `${
+          issue.id
+        } start date was ${daysAgo} day${maybeS} ago on ${issue.startDate.toDateString()}.`
       );
     } else {
       // Start date is in the future.
@@ -137,6 +139,10 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
       const timelineItems: Array<TimelineItem> = visibleIssues.map((issue) => {
         const isOverdue = !issue.resolved && !!issue.dueDate && isPastDate(issue.dueDate as Date);
         const warningSign = isOverdue ? "&nbsp;⚠️" : "";
+        const startSymbol = "⇤"; // "↦".
+        const endSymbol = "⇥";
+        const periodSymbol = "↹";
+        let typeSymbol = `<b>${periodSymbol}</b>`;
         const timePeriod: {
           start: Date | undefined;
           end: Date | undefined;
@@ -148,12 +154,14 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
           timePeriod.type = "range";
         } else if (issue.dueDate) {
           timePeriod.start = issue.dueDate;
+          typeSymbol = `<b>${endSymbol}</b>`;
         } else if (issue.startDate) {
           timePeriod.start = issue.startDate;
+          typeSymbol = `<b>${startSymbol}</b>`;
         }
         const item: TimelineItem = {
           id: issue.id,
-          content: `${issue.id}: ${issue.summary}${warningSign}`,
+          content: `${typeSymbol} ${issue.id}: ${issue.summary}${warningSign}`,
           title: getTooltip(issue, isOverdue),
           className: isOverdue ? "overdue" : undefined,
           style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
