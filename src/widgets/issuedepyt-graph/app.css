@@ -46,9 +46,32 @@ div.vertical-size-control-bar {
 .vis-item .vis-item-overflow {
   overflow: visible !important;
 }
-.vis-item.overdue {
+.vis-item.period {
+  border-left-width: 4px;
+  border-right-width: 4px;
+}
+.vis-item.start {
+  border-left-width: 4px;
+}
+.vis-item.end {
+  border-right-width: 4px;
+}
+
+.vis-item.period-overdue {
+  box-shadow: 0 0 4px #a46704;
+  border-left-width: 4px;
+  border-right-width: 4px;
+}
+
+.vis-item.start-overdue {
+  border-left-width: 4px;
   box-shadow: 0 0 4px #a46704;
 }
+.vis-item.end-overdue {
+  border-right-width: 4px;
+  box-shadow: 0 0 4px #a46704;
+}
+
 .vis-item.vis-selected {
   border-color: #27282e !important; /* --ring-text-color */
   box-shadow: 0 0 6px gray;
