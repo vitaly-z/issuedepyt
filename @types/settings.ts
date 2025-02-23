@@ -4,6 +4,7 @@ export type Settings = {
   assigneeField?: string;
   startDateField?: string;
   dueDateField?: string;
+  extraCustomFields?: string;
   upstreamRelations?: string;
   downstreamRelations?: string;
   autoLoadDeps?: boolean;

@@ -43,6 +43,14 @@
       "minLength": 1,
       "x-scope": "PROJECT"
     },
+    "extraCustomFields": {
+      "type": "string",
+      "title": "Extra custom field names given as a comma-separated list",
+      "description": "Additional custom field names to read and show for tickets.",
+      "default": "",
+      "minLength": 0,
+      "x-scope": "PROJECT"
+    },
     "upstreamRelations": {
       "type": "string",
       "title": "Upstream relations given as a comma-separated list of direction:type items",

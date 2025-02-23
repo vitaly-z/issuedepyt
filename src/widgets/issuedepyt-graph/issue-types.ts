@@ -6,6 +6,11 @@ export interface Relation {
   type: LinkType;
 }
 
+export interface CustomField {
+  name: string;
+  value: any;
+}
+
 export interface Relations {
   upstream: Array<Relation>;
   downstream: Array<Relation>;
@@ -34,4 +39,5 @@ export interface IssueInfo {
   linksKnown: boolean;
   showUpstream: boolean;
   showDownstream: boolean;
+  extraFields: Array<CustomField>;
 }

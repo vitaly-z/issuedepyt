@@ -106,6 +106,11 @@ name for this field is `Due Date`.
 
 The Due Date field is used to visualize issues in a timeline.
 
+##### Extra custom fields
+
+Additional custom fields to read and show for issues. Set to comman-separated list of the custom
+field names.
+
 ##### Upstream relations
 
 Comma-separated list of upstream relations. Each relation is given as the pair `direction:type`

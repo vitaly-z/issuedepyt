@@ -1,7 +1,7 @@
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
-import type { IssueInfo, IssueLink, Relation, Relations } from "./issue-types";
+import type { IssueInfo, IssueLink, Relation, Relations, CustomField } from "./issue-types";
 
 export type FollowDirection = "upstream" | "downstream";
 export type FollowDirections = Array<FollowDirection>;
@@ -36,7 +36,7 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
   const linkFields =
     "id,direction," +
     "linkType(name,sourceToTarget,targetToSource,directed,aggregation)," +
-    "issues(idReadable,summary,resolved,customFields(name,value(name)))";
+    "issues(idReadable,summary,resolved,customFields(name,value(name,fullName,presentation,text)))";
 
   const issue = await host.fetchYouTrack(`issues/${issueID}/links`, {
     query: {
@@ -63,7 +63,65 @@ const getCustomFieldValue = (
   fields: Array<{ name: string; value: any }>
 ): any => {
   const field = getCustomField(name, fields);
-  return field ? field.value : null;
+  if (!field || field.value == null) {
+    return null;
+  }
+  const type = field.$type;
+  const value = field.value;
+  if (type === "SimpleIssueCustomField") {
+    return value;
+  }
+  if (type === "DateIssueCustomField") {
+    return new Date(value);
+  }
+  if (type === "TextIssueCustomField") {
+    return value.text;
+  }
+  if (type === "PeriodIssueCustomField") {
+    return value.presentation;
+  }
+  if (
+    type === "SingleBuildIssueCustomField" ||
+    type === "SingleEnumIssueCustomField" ||
+    type === "SingleGroupIssueCustomField" ||
+    type === "SingleOwnedIssueCustomField" ||
+    type === "SingleVersionIssueCustomField" ||
+    type === "StateIssueCustomField"
+  ) {
+    return value.name;
+  }
+  if (type === "SingleUserIssueCustomField") {
+    return value.fullName ?? value.name;
+  }
+  if (type === "MultiUserIssueCustomField") {
+    return value.map((item: any) => item.fullName ?? item.name);
+  }
+  if (
+    type === "MultiEnumIssueCustomField" ||
+    type === "MultiGroupIssueCustomField" ||
+    type === "MultiOwnedIssueCustomField" ||
+    type === "MultiBuildIssueCustomField" ||
+    type === "MultiVersionIssueCustomField"
+  ) {
+    return value.map((item: any) => item.name);
+  }
+  console.log("Warning! Unknown custom field type for field", field);
+  return null;
+};
+
+const getExtraFields = (
+  fieldCsv: string | undefined,
+  fields: Array<{ name: string; value: any }>
+): Array<CustomField> => {
+  const fieldNames = fieldCsv ? fieldCsv.split(",").map((x) => x.trim()) : [];
+  const customFields = fieldNames.map((name) => {
+    return {
+      name,
+      value: getCustomFieldValue(name, fields),
+    };
+  });
+
+  return customFields;
 };
 
 async function fetchDepsRecursive(
@@ -118,9 +176,9 @@ async function fetchDepsRecursive(
       id: issue.idReadable,
       sourceId: issueID,
       summary: issue.summary,
-      type: getCustomFieldValue(settings?.typeField, issue.customFields)?.name,
-      state: getCustomFieldValue(settings?.stateField, issue.customFields)?.name,
-      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields)?.name,
+      type: getCustomFieldValue(settings?.typeField, issue.customFields),
+      state: getCustomFieldValue(settings?.stateField, issue.customFields),
+      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields),
       startDate: getCustomFieldValue(settings?.startDateField, issue.customFields),
       dueDate: getCustomFieldValue(settings?.dueDateField, issue.customFields),
       resolved: issue.resolved,
@@ -131,6 +189,7 @@ async function fetchDepsRecursive(
       relation:
         link.direction == "INWARD" ? link.linkType.targetToSource : link.linkType.sourceToTarget,
       depth: depth,
+      extraFields: getExtraFields(settings?.extraCustomFields, issue.customFields),
     }))
   );
   for (const link of linksFlat) {
@@ -169,8 +228,8 @@ async function fetchDepsRecursive(
         type: link.type,
         state: link.state,
         assignee: link.assignee,
-        startDate: link.startDate ? new Date(link.startDate) : null,
-        dueDate: link.dueDate ? new Date(link.dueDate) : null,
+        startDate: link.startDate,
+        dueDate: link.dueDate,
         resolved: link.resolved,
         depth: link.depth,
         upstreamLinks: [],
@@ -178,6 +237,7 @@ async function fetchDepsRecursive(
         linksKnown: false,
         showUpstream: false,
         showDownstream: false,
+        extraFields: link.extraFields,
       };
     }
 
@@ -260,16 +320,14 @@ export async function fetchIssueAndInfo(
     };
   }
 
-  const dueDateValue = getCustomFieldValue(settings?.dueDateField, issueInfo.customFields);
-  const startDateValue = getCustomFieldValue(settings?.startDateField, issueInfo.customFields);
   const issue: IssueInfo = {
     id: issueInfo.idReadable,
     summary: issueInfo.summary,
-    type: getCustomFieldValue(settings?.typeField, issueInfo.customFields)?.name,
-    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields)?.name,
-    assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields)?.name,
-    startDate: startDateValue ? new Date(startDateValue) : null,
-    dueDate: dueDateValue ? new Date(dueDateValue) : null,
+    type: getCustomFieldValue(settings?.typeField, issueInfo.customFields),
+    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields),
+    assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields),
+    startDate: getCustomFieldValue(settings?.startDateField, issueInfo.customFields),
+    dueDate: getCustomFieldValue(settings?.dueDateField, issueInfo.customFields),
     resolved: issueInfo.resolved,
     depth: 0,
     upstreamLinks: [],
@@ -277,6 +335,7 @@ export async function fetchIssueAndInfo(
     linksKnown: false,
     showDownstream: false,
     showUpstream: false,
+    extraFields: getExtraFields(settings?.extraCustomFields, issueInfo.customFields),
   };
 
   return { issue, fieldInfo };
