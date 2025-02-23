@@ -18,6 +18,7 @@ import type { FieldInfo } from "../../../@types/field-info";
 import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
 import type { FollowDirection, FollowDirections } from "./fetch-deps";
 import type { IssueInfo, IssueLink, Relation, Relations, DirectionType } from "./issue-types";
+import exportData from "./export";
 import DepGraph from "./dep-graph";
 import DepTimeline from "./dep-timeline";
 import IssueInfoCard from "./issue-info-card";
@@ -104,77 +105,6 @@ const getRelations = (settings: Settings): Relations | null => {
   const upstream = parseRelationList(settings?.upstreamRelations);
   const downstream = parseRelationList(settings?.downstreamRelations);
   return { upstream, downstream };
-};
-
-const exportRelations = (issue_id: string, issues: { [key: string]: IssueInfo }): void => {
-  const cols = [
-    "id",
-    "type",
-    "state",
-    "summary",
-    "assignee",
-    "dueDate",
-    "resolved",
-    "depth",
-    "relTargetId",
-    "relType",
-    "relName",
-    "relDirectionType",
-  ];
-  const createIssueRows = (issue: IssueInfo): string[] => {
-    const rows = [];
-    const issueCols = (issue: IssueInfo, link: IssueLink, direction: string): string => {
-      return [
-        issue.id,
-        issue?.type ? issue.type : "",
-        issue?.state ? issue.state : "",
-        issue?.summary ? issue.summary : "",
-        issue?.assignee ? issue.assignee : "",
-        issue.dueDate ? issue.dueDate.toISOString() : "",
-        !!issue.resolved,
-        issue.depth,
-        link.targetId,
-        link.type,
-        link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
-        direction,
-      ].join(",");
-    };
-    if (issue.linksKnown) {
-      rows.push(
-        ...issue.upstreamLinks.map((link: IssueLink) => issueCols(issue, link, "upstream"))
-      );
-      rows.push(
-        ...issue.downstreamLinks.map((link: IssueLink) => issueCols(issue, link, "downstream"))
-      );
-    } else {
-      rows.push(
-        issueCols(
-          issue,
-          // Empty link.
-          { targetId: "", type: "", direction: "INWARD", targetToSource: "", sourceToTarget: "" },
-          ""
-        )
-      );
-    }
-    return rows;
-  };
-  // Sort in depth order.
-  const sortedIssues = Object.values(issues).sort(
-    (a: IssueInfo, b: IssueInfo) => a.depth - b.depth
-  );
-  const rows = [cols.join(",")];
-  rows.push(...sortedIssues.flatMap(createIssueRows));
-
-  // Create a blob and download it.
-  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
-  const fileURL = URL.createObjectURL(blob);
-  const downloadLink = document.createElement("a");
-  downloadLink.href = fileURL;
-  downloadLink.download = `${issue_id.toLowerCase().replace("-", "")}_export.csv`;
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  // Free up resources.
-  URL.revokeObjectURL(fileURL);
 };
 
 const AppComponent: React.FunctionComponent = () => {
@@ -421,7 +351,7 @@ const AppComponent: React.FunctionComponent = () => {
                   setUseDepthRendering={setUseDepthRendering}
                   setFollowUpstream={setFollowUpstream}
                   setFollowDownstream={setFollowDownstream}
-                  onExportRelations={() => exportRelations(issue.id, issueData)}
+                  onExportData={() => exportData(issue.id, issueData)}
                 />
               </Group>
             </span>

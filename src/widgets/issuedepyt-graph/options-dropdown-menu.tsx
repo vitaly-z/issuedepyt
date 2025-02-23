@@ -20,7 +20,7 @@ interface OptionsDropdownMenuProps {
   setUseDepthRendering: (value: boolean) => void;
   setFollowUpstream: (value: boolean) => void;
   setFollowDownstream: (value: boolean) => void;
-  onExportRelations: () => void;
+  onExportData: () => void;
 }
 
 const OptionsDropdownMenu: React.FunctionComponent<OptionsDropdownMenuProps> = ({
@@ -36,7 +36,7 @@ const OptionsDropdownMenu: React.FunctionComponent<OptionsDropdownMenuProps> = (
   setUseDepthRendering,
   setFollowUpstream,
   setFollowDownstream,
-  onExportRelations,
+  onExportData,
 }) => {
   return (
     <DropdownMenu
@@ -123,8 +123,8 @@ const OptionsDropdownMenu: React.FunctionComponent<OptionsDropdownMenuProps> = (
         {
           rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
           template: (
-            <Button inline onClick={() => onExportRelations()}>
-              Export relations
+            <Button inline onClick={() => onExportData()}>
+              Export data as CSV
             </Button>
           ),
         },
