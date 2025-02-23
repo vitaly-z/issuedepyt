@@ -71,6 +71,52 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
   const collapseControlText = collapsed ? "Expand" : "Collapse";
   const collapseControlIcon = collapsed ? ChevronDownIcon : ChevronUpIcon;
 
+  const fields = [];
+  if (issue?.type != undefined) {
+    fields.push({ name: "Type", value: issue.type });
+  }
+  if (issue?.state != undefined) {
+    fields.push({ name: "State", value: issue.state });
+  }
+  if (issue?.assignee != undefined) {
+    fields.push({ name: "Assignee", value: issue.assignee });
+  }
+  if (issue?.dueDate) {
+    fields.push({ name: "Due Date", value: issue.dueDate.toDateString() });
+  }
+  for (const field of issue.extraFields) {
+    if (field.value == null) {
+      fields.push({ name: field.name, value: <i>No value</i> });
+      continue;
+    }
+    if (Array.isArray(field.value)) {
+      if (field.value.length === 0) {
+        fields.push({
+          name: field.name,
+          value: <i>No values</i>,
+        });
+      } else {
+        fields.push({
+          name: field.name,
+          value: field.value.map((x) => <Tag readOnly>{x.toString()}</Tag>),
+        });
+      }
+    } else {
+      fields.push({ name: field.name, value: field.value.toString() });
+    }
+  }
+
+  const fieldComps = fields.map(({ name, value }) => (
+    <p>
+      <Text size={Text.Size.S} info>
+        {name}
+      </Text>
+      <div>
+        <Text size={Text.Size.M}>{value}</Text>
+      </div>
+    </p>
+  ));
+
   return (
     <Island narrow withoutPaddings>
       <Header wrapWithTitle={false} border>
@@ -89,49 +135,9 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
           <Content>
             <Grid>
               <Row>
-                <Col xs={3}>
-                  {issue?.type != undefined && (
-                    <p>
-                      <Text size={Text.Size.S} info>
-                        Type
-                      </Text>
-                      <div>
-                        <Text size={Text.Size.M}>{issue.type}</Text>
-                      </div>
-                    </p>
-                  )}
-                  {issue?.state != undefined && (
-                    <p>
-                      <Text size={Text.Size.S} info>
-                        State
-                      </Text>
-                      <div>
-                        <Text size={Text.Size.M}>{issue.state}</Text>
-                      </div>
-                    </p>
-                  )}
-                  {issue?.assignee != undefined && (
-                    <p>
-                      <Text size={Text.Size.S} info>
-                        Assignee
-                      </Text>
-                      <div>
-                        <Text size={Text.Size.M}>{issue.assignee}</Text>
-                      </div>
-                    </p>
-                  )}
-                  {issue?.dueDate && (
-                    <p>
-                      <Text size={Text.Size.S} info>
-                        Due Date
-                      </Text>
-                      <div>
-                        <Text size={Text.Size.M}>{issue.dueDate.toDateString()}</Text>
-                      </div>
-                    </p>
-                  )}
-                </Col>
-                <Col xs={9}>{relationComps}</Col>
+                <Col xs={3}>{fieldComps.slice(0, (fieldComps.length + 1) / 2)}</Col>
+                <Col xs={3}>{fieldComps.slice((fieldComps.length + 1) / 2)}</Col>
+                <Col xs={6}>{relationComps}</Col>
               </Row>
             </Grid>
           </Content>
