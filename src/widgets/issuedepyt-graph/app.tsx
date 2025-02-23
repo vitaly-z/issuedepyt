@@ -1,6 +1,7 @@
 import React, { memo, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Icon from "@jetbrains/ring-ui-built/components/icon/icon";
+import { Grid, Row, Col } from "@jetbrains/ring-ui-built/components/grid/grid";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
@@ -237,7 +238,35 @@ const AppComponent: React.FunctionComponent = () => {
     <div className="widget">
       {!graphVisible && (
         <div>
-          <Button onClick={() => setGraphVisible((value) => !value)}>Load graph...</Button>
+          <Grid>
+            <Row start={"xs"} middle={"xs"}>
+              <Col>
+                <Button onClick={() => setGraphVisible((value) => !value)}>Load graph...</Button>
+              </Col>
+              <Col>
+                <Grid>
+                  <Row start={"xs"} middle={"xs"}>
+                    <Toggle
+                      size={ToggleSize.Size14}
+                      checked={followUpstream}
+                      onChange={(e: any) => setFollowUpstream(e.target.checked)}
+                    >
+                      Follow upstream (find issues that this issue depends on).
+                    </Toggle>
+                  </Row>
+                  <Row start={"xs"} middle={"xs"}>
+                    <Toggle
+                      size={ToggleSize.Size14}
+                      checked={followDownstream}
+                      onChange={(e: any) => setFollowDownstream(e.target.checked)}
+                    >
+                      Follow downstream (find issues that depends on this issue).
+                    </Toggle>
+                  </Row>
+                </Grid>
+              </Col>
+            </Row>
+          </Grid>
         </div>
       )}
       {graphVisible && (
