@@ -7,8 +7,8 @@
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "version": "1.1.0",
-  "changeNotes": "Version 1.1.0:\nAdd due date timeline.\nAdd setting for due date field.\nImproved visual apperance.",
+  "version": "1.2.0",
+  "changeNotes": "Version 1.2.0:\nAdd start date to timeline.\nAdd setting for start date field.\nAdd issue type to graph.\nAdd setting for extra fields.\nAdd export to csv.\nVisual improvments.",
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
   "widgets": [
