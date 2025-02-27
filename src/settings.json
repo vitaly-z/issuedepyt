@@ -43,6 +43,14 @@
       "minLength": 1,
       "x-scope": "PROJECT"
     },
+    "estimationField": {
+      "type": "string",
+      "title": "Estimation field name",
+      "description": "Name of the field with a time estimate of the ticket.",
+      "default": "Estimation",
+      "minLength": 1,
+      "x-scope": "PROJECT"
+    },
     "extraCustomFields": {
       "type": "string",
       "title": "Extra custom field names given as a comma-separated list",
