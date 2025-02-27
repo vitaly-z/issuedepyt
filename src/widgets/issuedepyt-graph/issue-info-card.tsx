@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { IssueInfo, IssueLink } from "./issue-types";
+import type { IssueInfo, IssueLink, IssuePeriod } from "./issue-types";
 import Island, { Header, Content } from "@jetbrains/ring-ui-built/components/island/island";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
@@ -86,6 +86,9 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
   }
   if (issue?.dueDate) {
     fields.push({ name: "Due Date", value: issue.dueDate.toDateString() });
+  }
+  if (issue?.estimation) {
+    fields.push({ name: "Estimation", value: (issue.estimation as IssuePeriod)?.presentation });
   }
   for (const field of issue.extraFields) {
     if (field.value == null) {

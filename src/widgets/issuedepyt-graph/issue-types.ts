@@ -24,6 +24,11 @@ export interface IssueLink {
   sourceToTarget: string;
 }
 
+export interface IssuePeriod {
+  presentation: string;
+  minutes: number;
+}
+
 export interface IssueInfo {
   id: string;
   summary: string;
@@ -32,6 +37,7 @@ export interface IssueInfo {
   assignee?: string;
   startDate: Date | null;
   dueDate: Date | null;
+  estimation: IssuePeriod | null;
   resolved: boolean;
   depth: number; // Root node has depth 0.
   upstreamLinks: Array<IssueLink>;

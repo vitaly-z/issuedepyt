@@ -1,7 +1,14 @@
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
-import type { IssueInfo, IssueLink, Relation, Relations, CustomField } from "./issue-types";
+import type {
+  IssueInfo,
+  IssueLink,
+  Relation,
+  Relations,
+  CustomField,
+  IssuePeriod,
+} from "./issue-types";
 
 export type FollowDirection = "upstream" | "downstream";
 export type FollowDirections = Array<FollowDirection>;
@@ -11,7 +18,7 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
     idReadable,summary,resolved,
     customFields(
       name,
-      value(name),
+      value(name,fullName,presentation,minutes,text),
       projectCustomField(
         name,
         bundle(
@@ -33,10 +40,16 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
 }
 
 async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
-  const linkFields =
-    "id,direction," +
-    "linkType(name,sourceToTarget,targetToSource,directed,aggregation)," +
-    "issues(idReadable,summary,resolved,customFields(name,value(name,fullName,presentation,text)))";
+  const linkFields = `
+    id,direction,
+    linkType(name,sourceToTarget,targetToSource,directed,aggregation),
+    issues(
+      idReadable,summary,resolved,
+      customFields(
+        name,
+        value(name,fullName,presentation,minutes,text)
+      )
+    )`.replace(/\s+/g, "");
 
   const issue = await host.fetchYouTrack(`issues/${issueID}/links`, {
     query: {
@@ -78,7 +91,7 @@ const getCustomFieldValue = (
     return value.text;
   }
   if (type === "PeriodIssueCustomField") {
-    return value.presentation;
+    return { presentation: value.presentation, minutes: value.minutes } as IssuePeriod;
   }
   if (
     type === "SingleBuildIssueCustomField" ||
@@ -181,6 +194,7 @@ async function fetchDepsRecursive(
       assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields),
       startDate: getCustomFieldValue(settings?.startDateField, issue.customFields),
       dueDate: getCustomFieldValue(settings?.dueDateField, issue.customFields),
+      estimation: getCustomFieldValue(settings?.estimationField, issue.customFields),
       resolved: issue.resolved,
       direction: link.direction,
       linkType: link.linkType.name,
@@ -230,6 +244,7 @@ async function fetchDepsRecursive(
         assignee: link.assignee,
         startDate: link.startDate,
         dueDate: link.dueDate,
+        estimation: link.estimation,
         resolved: link.resolved,
         depth: link.depth,
         upstreamLinks: [],
@@ -328,6 +343,7 @@ export async function fetchIssueAndInfo(
     assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields),
     startDate: getCustomFieldValue(settings?.startDateField, issueInfo.customFields),
     dueDate: getCustomFieldValue(settings?.dueDateField, issueInfo.customFields),
+    estimation: getCustomFieldValue(settings?.estimationField, issueInfo.customFields),
     resolved: issueInfo.resolved,
     depth: 0,
     upstreamLinks: [],
