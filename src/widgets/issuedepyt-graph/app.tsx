@@ -22,6 +22,7 @@ import type { IssueInfo, IssueLink, Relation, Relations, DirectionType } from ".
 import exportData from "./export";
 import DepGraph from "./dep-graph";
 import DepTimeline from "./dep-timeline";
+import DepEstimationGraph from "./dep-estimation-graph";
 import IssueInfoCard from "./issue-info-card";
 import OptionsDropdownMenu from "./options-dropdown-menu";
 import VerticalSizeControl from "./vertical-size-control";
@@ -386,14 +387,24 @@ const AppComponent: React.FunctionComponent = () => {
             </span>
           </div>
           {timelineVisible && Object.keys(issueData).length > 0 && (
-            <DepTimeline
-              issues={issueData}
-              selectedIssueId={selectedNode}
-              fieldInfo={fieldInfo}
-              maxNodeWidth={maxNodeWidth}
-              setSelectedNode={setSelectedNode}
-              onOpenNode={openNode}
-            />
+            <div>
+              <DepTimeline
+                issues={issueData}
+                selectedIssueId={selectedNode}
+                fieldInfo={fieldInfo}
+                maxNodeWidth={maxNodeWidth}
+                setSelectedNode={setSelectedNode}
+                onOpenNode={openNode}
+              />
+              <DepEstimationGraph
+                issues={issueData}
+                selectedIssueId={selectedNode}
+                fieldInfo={fieldInfo}
+                maxNodeWidth={maxNodeWidth}
+                setSelectedNode={setSelectedNode}
+                onOpenNode={openNode}
+              />
+            </div>
           )}
           {Object.keys(issueData).length > 0 && (
             <DepGraph
