@@ -96,8 +96,14 @@ const getNodeTooltip = (issue: IssueInfo): string => {
   if (issue?.assignee != undefined && issue.assignee.length > 0) {
     lines.push(`Assignee: ${issue.assignee}`);
   }
+  if (issue?.startDate) {
+    lines.push(`Start date: ${issue.startDate.toDateString()}`);
+  }
   if (issue?.dueDate) {
     lines.push(`Due date: ${issue.dueDate.toDateString()}`);
+  }
+  if (issue?.estimation) {
+    lines.push(`Estimation: ${issue.estimation.presentation}`);
   }
   lines.push("Click to select and double-click to open.");
 

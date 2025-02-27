@@ -30,7 +30,7 @@ const FONT_FAMILY_MONOSPACE =
   'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
 
 const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
-  let lines = [];
+  let lines = [`<b>${issue.id}</b>`];
   if (issue?.dueDate) {
     const today = new Date();
     if (isOverdue) {
@@ -43,9 +43,7 @@ const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
       // Due date is future.
       const daysUntil = durationToDays(issue.dueDate.getTime()) - durationToDays(today.getTime());
       const maybeS = daysUntil > 1 ? "s" : "";
-      lines.push(
-        `${issue.id} due date is in ${daysUntil} day${maybeS} on ${issue.dueDate.toDateString()}.`
-      );
+      lines.push(`Due date is in ${daysUntil} day${maybeS} on ${issue.dueDate.toDateString()}.`);
     }
   }
   if (issue?.startDate) {
@@ -55,20 +53,19 @@ const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
       const daysAgo = durationToDays(today.getTime()) - durationToDays(issue.startDate.getTime());
       const maybeS = daysAgo > 1 ? "s" : "";
       lines.push(
-        `${
-          issue.id
-        } start date was ${daysAgo} day${maybeS} ago on ${issue.startDate.toDateString()}.`
+        `Start date was ${daysAgo} day${maybeS} ago on ${issue.startDate.toDateString()}.`
       );
     } else {
       // Start date is in the future.
       const daysUntil = durationToDays(issue.startDate.getTime()) - durationToDays(today.getTime());
       const maybeS = daysUntil > 1 ? "s" : "";
       lines.push(
-        `${
-          issue.id
-        } start date is in ${daysUntil} day${maybeS} on ${issue.startDate.toDateString()}.`
+        `Start date is in ${daysUntil} day${maybeS} on ${issue.startDate.toDateString()}.`
       );
     }
+  }
+  if (issue?.estimation) {
+    lines.push(`Estimation: ${issue.estimation.presentation}.`);
   }
 
   return lines.join("<br/>");
@@ -163,9 +160,10 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
           className = "start";
         }
         className = isOverdue ? `${className}-overdue` : className;
+        const estimate = issue?.estimation ? ` [${issue.estimation.presentation}]` : "";
         const item: TimelineItem = {
           id: issue.id,
-          content: `${typeSymbol} ${issue.id}: ${issue.summary}${warningSign}`,
+          content: `${typeSymbol} ${issue.id}: ${issue.summary}${estimate}${warningSign}`,
           title: getTooltip(issue, isOverdue),
           className,
           style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
