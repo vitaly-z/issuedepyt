@@ -23,7 +23,9 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
   console.log(`Showing issue ${issue.id}`);
 
   const getRelation = (link: IssueLink) =>
-    link.direction === "OUTWARD" ? link.sourceToTarget : link.targetToSource;
+    link.direction === "OUTWARD" || link.direction === "BOTH"
+      ? link.sourceToTarget
+      : link.targetToSource;
 
   let relationComps = [];
   for (const item of [

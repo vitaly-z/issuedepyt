@@ -120,21 +120,56 @@ const getGraphObjects = (
   fieldInfo: FieldInfo,
   useDepthRendering: boolean
 ): { nodes: any[]; edges: any[] } => {
-  let edges = Object.values(issues).flatMap((issue: IssueInfo) =>
+  const linkInfo = {};
+  const linksAndEdges = Object.values(issues).flatMap((issue: IssueInfo) =>
     [
       ...(issue.showUpstream ? issue.upstreamLinks : []),
       ...(issue.showDownstream ? issue.downstreamLinks : []),
     ].map((link: IssueLink) => ({
-      from: issue.id,
-      to: link.targetId,
-      label: link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget,
-      arrows: {
-        from: {
-          enabled: link.direction == "OUTWARD" && link.type == "Subtask",
+      direction: link.direction,
+      type: link.type,
+      edge: {
+        from: issue.id,
+        to: link.targetId,
+        label:
+          link.direction === "OUTWARD" || link.direction === "BOTH"
+            ? link.sourceToTarget
+            : link.targetToSource,
+        arrows: {
+          from: {
+            enabled: link.direction == "OUTWARD" && link.type == "Subtask",
+          },
+          to: {
+            enabled: link.direction !== "BOTH",
+          },
         },
       },
     }))
   );
+
+  // Filter out duplicate edges.
+  let edges = [];
+  const unDirectedEdgesAdded: { [key: string]: boolean } = {};
+  for (const { direction, type, edge } of linksAndEdges) {
+    // Include all directed edges.
+    if (direction !== "BOTH") {
+      edges.push(edge);
+      continue;
+    }
+
+    // If non-directed, check if already added.
+    const reverseEdgeKey = `${type}-${edge.to}-${edge.from}`;
+
+    if (reverseEdgeKey in unDirectedEdgesAdded) {
+      continue;
+    }
+
+    // Add and mark as added.
+    edges.push(edge);
+    const edgeKey = `${type}-${edge.from}-${edge.to}`;
+    unDirectedEdgesAdded[edgeKey] = true;
+  }
+
   let nodes = Object.values(issues)
     // Filter stray nodes without any edges.
     .filter(
@@ -173,14 +208,18 @@ const getGraphObjects = (
       }
       return node;
     });
-  // Remove duplicate links from issue if they already existed.
-  /*issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
+  /*
+  issues[issueID].links = issues[issueID].links.filter((sourceLink: IssueLink) => {
     const target = issues[sourceLink.targetId];
-    const targetHasSameLink = -1 !== target.links.findIndex((targetLink: IssueLink) =>
-      targetLink.targetId === issueID && targetLink.type === sourceLink.type);
+    const targetHasSameLink =
+      -1 !==
+      target.links.findIndex(
+        (targetLink: IssueLink) =>
+          targetLink.targetId === issueID && targetLink.type === sourceLink.type
+      );
     return !targetHasSameLink;
-  });*/
-
+  });
+*/
   return { nodes, edges };
 };
 

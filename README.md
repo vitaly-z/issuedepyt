@@ -127,7 +127,9 @@ field names.
 ##### Upstream relations
 
 Comma-separated list of upstream relations. Each relation is given as the pair `direction:type`
-where direction is one of `inward` or `outward` and `type` is the relation type.
+where direction is one of `inward`, `outward` or `both` and `type` is the relation type. The
+directions `inward` and `outward` are used for aggregation and directed relations while the `both`
+direction is used for undirected relations.
 
 An upstream relation is defined as a relation that the downstream issue has some dependency towards.
 
@@ -135,11 +137,19 @@ In a default YouTrack setup having the `Subtask` and `Depend` relations the upst
 configuration should be set to `outward:subtask,inward:depend`. This identifies the relations
 *parent for* and *depends on*.
 
+Note that undirected relations are supported, although not classifying as upstream or downstream, by
+specfifing direction `both`. For example the *relates to* relation is identified by `both:relates`.
+
 ##### Downstream relations
 
 Comma-separated list of downstream relations. Each relation is given as the pair `direction:type`
-where direction is one of `inward` or `outward` and `type` is the relation type.
+where direction is one of `inward`, `outward` or `both` and `type` is the relation type. The
+directions `inward` and `outward` are used for aggregation and directed relations while the `both`
+direction is used for undirected relations.
 
 In a default YouTrack setup having the `Subtask` and `Depend` relations the downstream relations
 configuration should be set to `inward:subtask,outward:depend`. This identifies the relations
 *subtask of* and *is required for*.
+
+Note that undirected relations are supported, although not classifying as upstream or downstream, by
+specfifing direction `both`. For example the *relates to* relation is identified by `both:relates`.

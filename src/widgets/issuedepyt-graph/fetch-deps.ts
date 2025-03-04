@@ -267,7 +267,8 @@ async function fetchDepsRecursive(
       targetId: issue.id,
       targetIdReadable: issue.idReadable,
       type: link.linkType,
-      direction: link.direction === "INWARD" ? "OUTWARD" : "INWARD",
+      direction:
+        link.direction === "BOTH" ? "BOTH" : link.direction === "INWARD" ? "OUTWARD" : "INWARD",
       targetToSource: link.targetToSource,
       sourceToTarget: link.sourceToTarget,
     };

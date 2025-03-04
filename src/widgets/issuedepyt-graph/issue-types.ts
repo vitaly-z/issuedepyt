@@ -1,4 +1,4 @@
-export type DirectionType = "INWARD" | "OUTWARD";
+export type DirectionType = "INWARD" | "OUTWARD" | "BOTH";
 export type LinkType = string;
 
 export interface Relation {
