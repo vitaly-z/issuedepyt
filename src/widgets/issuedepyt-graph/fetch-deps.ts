@@ -99,7 +99,8 @@ const getCustomFieldValue = (
     type === "SingleGroupIssueCustomField" ||
     type === "SingleOwnedIssueCustomField" ||
     type === "SingleVersionIssueCustomField" ||
-    type === "StateIssueCustomField"
+    type === "StateIssueCustomField" ||
+    type === "StateMachineIssueCustomField"
   ) {
     return value.name;
   }
