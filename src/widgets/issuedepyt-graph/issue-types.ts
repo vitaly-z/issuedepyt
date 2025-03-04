@@ -18,6 +18,7 @@ export interface Relations {
 
 export interface IssueLink {
   targetId: string;
+  targetIdReadable: string;
   type: LinkType;
   direction: DirectionType;
   targetToSource: string;
@@ -31,6 +32,8 @@ export interface IssuePeriod {
 
 export interface IssueInfo {
   id: string;
+  idReadable: string;
+  isDraft: boolean;
   summary: string;
   type?: string;
   state?: string;

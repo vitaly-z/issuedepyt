@@ -15,7 +15,7 @@ export type FollowDirections = Array<FollowDirection>;
 
 async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
   const fields = `
-    idReadable,summary,resolved,
+    id,idReadable,summary,resolved,isDraft,
     customFields(
       name,
       value(name,fullName,presentation,minutes,text),
@@ -44,7 +44,7 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
     id,direction,
     linkType(name,sourceToTarget,targetToSource,directed,aggregation),
     issues(
-      idReadable,summary,resolved,
+      id,idReadable,summary,resolved,isDraft,
       customFields(
         name,
         value(name,fullName,presentation,minutes,text)
@@ -187,7 +187,9 @@ async function fetchDepsRecursive(
 
   const linksFlat = linksToFollow.flatMap((link: any) =>
     link.issues.map((issue: any) => ({
-      id: issue.idReadable,
+      id: issue.id,
+      idReadable: issue.isDraft ? `Draft ${issue.id}` : issue.idReadable,
+      isDraft: issue.isDraft,
       sourceId: issueID,
       summary: issue.summary,
       type: getCustomFieldValue(settings?.typeField, issue.customFields),
@@ -222,6 +224,7 @@ async function fetchDepsRecursive(
     }
     linksList.push({
       targetId: link.id,
+      targetIdReadable: link.idReadable,
       type: link.linkType,
       direction: link.direction,
       targetToSource: link.targetToSource,
@@ -239,6 +242,8 @@ async function fetchDepsRecursive(
     if (!(link.id in issues)) {
       issues[link.id] = {
         id: link.id,
+        idReadable: link.isDraft ? `Draft ${link.id}` : link.idReadable,
+        isDraft: link.isDraft,
         summary: link.summary,
         type: link.type,
         state: link.state,
@@ -260,6 +265,7 @@ async function fetchDepsRecursive(
     // Invert link and inject that in target issue if not already present.
     const mirroredLink: IssueLink = {
       targetId: issue.id,
+      targetIdReadable: issue.idReadable,
       type: link.linkType,
       direction: link.direction === "INWARD" ? "OUTWARD" : "INWARD",
       targetToSource: link.targetToSource,
@@ -337,7 +343,9 @@ export async function fetchIssueAndInfo(
   }
 
   const issue: IssueInfo = {
-    id: issueInfo.idReadable,
+    id: issueInfo.id,
+    idReadable: issueInfo.isDraft ? `Draft ${issueInfo.id}` : issueInfo.idReadable,
+    isDraft: issueInfo.isDraft,
     summary: issueInfo.summary,
     type: getCustomFieldValue(settings?.typeField, issueInfo.customFields),
     state: getCustomFieldValue(settings?.stateField, issueInfo.customFields),

@@ -13,9 +13,17 @@ const downloadFile = (filename: string, mimeType: string, content: any): void =>
   URL.revokeObjectURL(fileURL);
 };
 
-const exportData = (issue_id: string, issues: { [key: string]: IssueInfo }): void => {
+const exportData = (issueIdReadable: string, issues: { [key: string]: IssueInfo }): void => {
+  const rootIssue = Object.values(issues).find((x) =>
+    x.isDraft ? x.id === issueIdReadable : x.idReadable === issueIdReadable
+  );
+  if (!rootIssue) {
+    console.log(`Failed to export ${issueIdReadable}: Cannot find fetched data`, issues);
+    return;
+  }
+  const issueId = rootIssue.id;
   const cols = ["id", "type", "state", "summary", "assignee", "startDate", "dueDate"];
-  const extraFieldNames = issues[issue_id].extraFields.map((field) => field.name);
+  const extraFieldNames = rootIssue.extraFields.map((field) => field.name);
   cols.push(...extraFieldNames);
   cols.push("resolved", "depth", "relTargetId", "relType", "relName", "relDirectionType");
   const toBooleanCol = (value: boolean | undefined): string => {
@@ -41,7 +49,7 @@ const exportData = (issue_id: string, issues: { [key: string]: IssueInfo }): voi
     const rows = [];
     const issueCols = (issue: IssueInfo, link: IssueLink, direction: string): string => {
       const row: Array<string | number> = [
-        issue.id,
+        issue.idReadable,
         toTextCol(issue?.type),
         toTextCol(issue?.state),
         toTextCol(issue?.summary),
@@ -57,7 +65,7 @@ const exportData = (issue_id: string, issues: { [key: string]: IssueInfo }): voi
       row.push(
         toBooleanCol(!!issue.resolved),
         issue.depth,
-        toTextCol(link.targetId),
+        toTextCol(link.targetIdReadable),
         toTextCol(link.type),
         toTextCol(link.direction === "INWARD" ? link.targetToSource : link.sourceToTarget),
         toTextCol(direction)
@@ -76,7 +84,14 @@ const exportData = (issue_id: string, issues: { [key: string]: IssueInfo }): voi
         issueCols(
           issue,
           // Empty link.
-          { targetId: "", type: "", direction: "INWARD", targetToSource: "", sourceToTarget: "" },
+          {
+            targetId: "",
+            targetIdReadable: "",
+            type: "",
+            direction: "INWARD",
+            targetToSource: "",
+            sourceToTarget: "",
+          },
           ""
         )
       );
@@ -91,7 +106,7 @@ const exportData = (issue_id: string, issues: { [key: string]: IssueInfo }): voi
   rows.push(...sortedIssues.flatMap(createIssueRows));
 
   downloadFile(
-    `${issue_id.toLowerCase().replace("-", "")}_export.csv`,
+    `${issueIdReadable.toLowerCase().replace("-", "")}_export.csv`,
     "text/csv",
     rows.join("\n")
   );

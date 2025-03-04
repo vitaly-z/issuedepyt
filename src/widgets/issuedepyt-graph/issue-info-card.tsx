@@ -18,7 +18,7 @@ interface IssueInfoCardProps {
 const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) => {
   const [collapsed, setCollapsed] = useState<boolean>(true);
 
-  const title = issue?.summary ? `${issue.id}: ${issue.summary}` : issue.id;
+  const title = issue?.summary ? `${issue.idReadable}: ${issue.summary}` : issue.idReadable;
 
   console.log(`Showing issue ${issue.id}`);
 
@@ -44,7 +44,7 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
         if (linkRelation === relation) {
           tags.push(
             <Tag readOnly>
-              <Link href={`/issue/${link.targetId}`}>{link.targetId}</Link>
+              <Link href={`/issue/${link.targetId}`}>{link.targetIdReadable}</Link>
             </Tag>
           );
         }

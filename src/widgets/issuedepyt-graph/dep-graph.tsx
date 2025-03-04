@@ -63,7 +63,7 @@ const getNodeLabel = (issue: IssueInfo): string => {
     lines.push(`<i><< ${issue.type} >></i>`);
   }
 
-  let summary = "" + issue.id;
+  let summary = "" + issue.idReadable;
   if (issue?.summary) {
     summary = `<b>${summary}: ${issue.summary}</b>`;
   }
@@ -86,7 +86,7 @@ const getNodeLabel = (issue: IssueInfo): string => {
 
 const getNodeTooltip = (issue: IssueInfo): string => {
   let lines = [];
-  lines.push(`${issue.id}`);
+  lines.push(issue.idReadable);
   if (issue?.type) {
     lines.push(`Type: ${issue.type}`);
   }

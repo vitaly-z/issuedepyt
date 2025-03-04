@@ -30,14 +30,14 @@ const FONT_FAMILY_MONOSPACE =
   'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
 
 const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
-  let lines = [`<b>${issue.id}</b>`];
+  let lines = [`<b>${issue.idReadable}</b>`];
   if (issue?.dueDate) {
     const today = new Date();
     if (isOverdue) {
       // Due date was in the past.
       const daysAgo = durationToDays(today.getTime()) - durationToDays(issue.dueDate.getTime());
       const maybeS = daysAgo > 1 ? "s" : "";
-      lines.push(`${issue.id} is overdue!`);
+      lines.push(`${issue.idReadable} is overdue!`);
       lines.push(`Due date was ${daysAgo} day${maybeS} ago on ${issue.dueDate.toDateString()}.`);
     } else {
       // Due date is future.
@@ -163,7 +163,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
         const estimate = issue?.estimation ? ` [${issue.estimation.presentation}]` : "";
         const item: TimelineItem = {
           id: issue.id,
-          content: `${typeSymbol} ${issue.id}: ${issue.summary}${estimate}${warningSign}`,
+          content: `${typeSymbol} ${issue.idReadable}: ${issue.summary}${estimate}${warningSign}`,
           title: getTooltip(issue, isOverdue),
           className,
           style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
