@@ -101,12 +101,23 @@ tickets.
 Set to the name of the field in the project representing the issue assignee. The YouTrack default
 name for this field is `Assignee`.
 
+##### Start Date field name
+
+Set to the name of the field in the project representing the issue Start Date.
+
+The Start Date field is used to visualize issues in a timeline.
+
 ##### Due Date field name
 
 Set to the name of the field in the project representing the issue Due Date. The YouTrack default
 name for this field is `Due Date`.
 
 The Due Date field is used to visualize issues in a timeline.
+
+##### Estimation field name
+
+Set to the name of the field in the project representing the a time estimate of an issue. Note that
+field type must be of type `period`.
 
 ##### Extra custom fields
 
