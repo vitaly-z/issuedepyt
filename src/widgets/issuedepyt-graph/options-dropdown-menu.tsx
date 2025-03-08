@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import DropdownMenu from "@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu";
 import Input from "@jetbrains/ring-ui-built/components/input/input";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
 import MoreOptionsIcon from "@jetbrains/icons/more-options";
+import CloseIcon from "@jetbrains/icons/close";
 import Tooltip from "@jetbrains/ring-ui-built/components/tooltip/tooltip";
 import Theme from "@jetbrains/ring-ui-built/components/global/theme";
 
@@ -38,13 +39,18 @@ const OptionsDropdownMenu: React.FunctionComponent<OptionsDropdownMenuProps> = (
   setFollowDownstream,
   onExportData,
 }) => {
+  const [open, setOpen] = useState<boolean>(false);
+
+  const popupIcon = open ? CloseIcon : MoreOptionsIcon;
+
   return (
     <DropdownMenu
-      anchor={
-        <Tooltip title="Show more" theme={Theme.LIGHT}>
-          <Button inline icon={MoreOptionsIcon} />
-        </Tooltip>
-      }
+      onShow={() => setOpen(true)}
+      onHide={() => setOpen(false)}
+      menuProps={{
+        closeOnSelect: false,
+      }}
+      anchor={<Button inline icon={popupIcon} />}
       data={[
         {
           rgItemType: DropdownMenu.ListProps.Type.TITLE,
