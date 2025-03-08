@@ -20,9 +20,9 @@ export const createFilterState = (fieldInfo: FieldInfo): FilterState => {
     const fieldInfoKey: FieldInfoKey = `${fieldName}Field`;
     filterState[fieldName] = {};
     if (fieldInfoKey in fieldInfo) {
-      const values = Object.keys(fieldInfo[fieldInfoKey]?.values || {});
-      for (const valueName of values) {
-        filterState[fieldName][valueName] = true;
+      const values = fieldInfo[fieldInfoKey]?.values || {};
+      for (const [valueName, valueProps] of Object.entries(values)) {
+        filterState[fieldName][valueName] = !valueProps.archived;
       }
     }
   }
@@ -46,9 +46,12 @@ const FilterDropdownMenu: React.FunctionComponent<FilterDropdownMenuProps> = ({
       const field = fieldInfo[fieldInfoKey];
       items.push({
         rgItemType: DropdownMenu.ListProps.Type.TITLE,
-        label: `Filter field ${field.name}`,
+        label: `Filter on field ${field.name}`,
       });
-      for (const valueName of Object.keys(field.values)) {
+      for (const [valueName, valueProps] of Object.entries(field.values)) {
+        if (valueProps.archived) {
+          continue;
+        }
         items.push({
           rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
           template: (
