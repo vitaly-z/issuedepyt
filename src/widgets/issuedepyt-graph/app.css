@@ -104,6 +104,22 @@ span.dep-toolbar-right {
   margin-left: auto;
 }
 
+.nested-menu-item {
+  display: flex;
+  width: 100%;
+}
+.nested-menu-title {
+  flex-grow: 1;
+}
+.nested-menu-button {
+  all: unset;
+  display: flex;
+  width: 100%;
+}
+.nested-menu-button > * {
+  width: 100%;
+}
+
 div.vertical-size-control-bar {
   margin-top: calc(var(--ring-unit) / 2);
   display: flex;
