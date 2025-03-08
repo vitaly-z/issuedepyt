@@ -14,7 +14,10 @@ interface FilterDropdownMenuProps {
 }
 
 export const createFilterState = (fieldInfo: FieldInfo): FilterState => {
-  const filterState: FilterState = {};
+  const filterState: FilterState = {
+    showOrphans: false,
+    showWhenLinksUnknown: true,
+  };
   const fields: Array<FilterStateKey> = ["type", "state"];
   for (const fieldName of fields) {
     const fieldInfoKey: FieldInfoKey = `${fieldName}Field`;
@@ -70,6 +73,38 @@ const FilterDropdownMenu: React.FunctionComponent<FilterDropdownMenuProps> = ({
       }
     }
   }
+  items.push({
+    rgItemType: DropdownMenu.ListProps.Type.TITLE,
+    label: "Other filters",
+  });
+  items.push({
+    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+    template: (
+      <Checkbox
+        label={"Show orphan nodes"}
+        checked={filterState.showOrphans}
+        onChange={(e: any) => {
+          const newState: FilterState = { ...filterState };
+          newState.showOrphans = e.target.checked;
+          setFilterState(newState);
+        }}
+      />
+    ),
+  });
+  items.push({
+    rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+    template: (
+      <Checkbox
+        label={"Show nodes with unknown relations"}
+        checked={filterState.showWhenLinksUnknown}
+        onChange={(e: any) => {
+          const newState: FilterState = { ...filterState };
+          newState.showWhenLinksUnknown = e.target.checked;
+          setFilterState(newState);
+        }}
+      />
+    ),
+  });
 
   return (
     <DropdownMenu

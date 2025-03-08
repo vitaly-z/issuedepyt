@@ -131,7 +131,10 @@ const AppComponent: React.FunctionComponent = () => {
   const [followDownstream, setFollowDownstream] = useState<boolean>(false);
   const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
   const [issueData, setIssueData] = useState<{ [key: string]: IssueInfo }>({});
-  const [filterState, setFilterState] = useState<FilterState>({});
+  const [filterState, setFilterState] = useState<FilterState>({
+    showOrphans: false,
+    showWhenLinksUnknown: true,
+  });
 
   const filterRelations = (
     relations: Relations,

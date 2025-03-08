@@ -10,11 +10,19 @@ export const filterIssues = (filter: FilterState, issues: Record<string, IssueIn
       const typeValue = issue?.type;
       return (
         (stateValue == undefined || state[stateValue]) &&
-        (typeValue == undefined || type[typeValue])
+        (typeValue == undefined || type[typeValue]) &&
+        (filter.showWhenLinksUnknown || issue.linksKnown)
       );
     })
   );
 
+  // If we're showing orphans, we're done.
+  if (filter.showOrphans) {
+    return filteredIssues;
+  }
+
+  // Remove orhan issues by first finding all relations and then only keeping
+  // issues that has both ends of the relations visible.
   const relations = Object.entries(filteredIssues)
     .map(([key, issue]) => issue)
     .flatMap((issue: IssueInfo) =>
@@ -30,7 +38,8 @@ export const filterIssues = (filter: FilterState, issues: Record<string, IssueIn
     .filter((x) => x.to in filteredIssues);
 
   return Object.fromEntries(
-    // Only show issues that's shown in the dependency graph, i.e. that they have a visible relation.
+    // Only show issues that's shown in the dependency graph,
+    // i.e. that they have a visible relation.
     Object.entries(filteredIssues).filter(
       ([key, issue]) =>
         issue.depth === 0 || relations.some((x) => x.from === issue.id || x.to === issue.id)
