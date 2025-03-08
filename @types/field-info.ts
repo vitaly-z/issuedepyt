@@ -9,6 +9,8 @@ export type FieldInfoField = {
   };
 };
 
+export type FieldInfoKey = "stateField" | "typeField";
 export type FieldInfo = {
   stateField?: FieldInfoField;
+  typeField?: FieldInfoField;
 };

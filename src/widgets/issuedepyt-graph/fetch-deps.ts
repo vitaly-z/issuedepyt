@@ -323,10 +323,11 @@ export async function fetchIssueAndInfo(
 ): Promise<{ issue: IssueInfo; fieldInfo: FieldInfo }> {
   const issueInfo = await fetchIssueInfo(host, issueId);
 
-  const stateField = getCustomField(settings?.stateField, issueInfo.customFields);
   let fieldInfo: FieldInfo = {};
+  const stateField = getCustomField(settings?.stateField, issueInfo.customFields);
+  const typeField = getCustomField(settings?.typeField, issueInfo.customFields);
   if (stateField != undefined) {
-    fieldInfo = {
+    Object.assign(fieldInfo, {
       stateField: {
         name: stateField.name,
         values: Object.fromEntries(
@@ -340,7 +341,24 @@ export async function fetchIssueAndInfo(
           ])
         ),
       },
-    };
+    });
+  }
+  if (typeField != undefined) {
+    Object.assign(fieldInfo, {
+      typeField: {
+        name: typeField.name,
+        values: Object.fromEntries(
+          typeField.projectCustomField.bundle.values.map((value: any) => [
+            value.name,
+            {
+              colorId: value.color.id,
+              background: value.color.background,
+              foreground: value.color.foreground,
+            },
+          ])
+        ),
+      },
+    });
   }
 
   const issue: IssueInfo = {
