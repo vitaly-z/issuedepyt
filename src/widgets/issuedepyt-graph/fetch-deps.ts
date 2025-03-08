@@ -24,6 +24,7 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
         bundle(
           values(
             name,
+            archived,
             color(id,background,foreground)
           )
         )
@@ -334,6 +335,7 @@ export async function fetchIssueAndInfo(
           stateField.projectCustomField.bundle.values.map((value: any) => [
             value.name,
             {
+              archived: value.archived,
               colorId: value.color.id,
               background: value.color.background,
               foreground: value.color.foreground,
@@ -351,6 +353,7 @@ export async function fetchIssueAndInfo(
           typeField.projectCustomField.bundle.values.map((value: any) => [
             value.name,
             {
+              archived: value.archived,
               colorId: value.color.id,
               background: value.color.background,
               foreground: value.color.foreground,

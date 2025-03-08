@@ -2,6 +2,7 @@ export type FieldInfoField = {
   name: string;
   values: {
     [key: string]: {
+      archived: boolean;
       colorId: string;
       background: string;
       foreground: string;
