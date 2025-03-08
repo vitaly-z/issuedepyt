@@ -15,7 +15,7 @@ import UpdateIcon from "@jetbrains/icons/update";
 import DownloadIcon from "@jetbrains/icons/download";
 import type { HostAPI } from "../../../@types/globals";
 import type { Settings } from "../../../@types/settings";
-import type { FieldInfo } from "../../../@types/field-info";
+import type { FieldInfo, FieldInfoKey } from "../../../@types/field-info";
 import { fetchDeps, fetchDepsAndExtend, fetchIssueAndInfo } from "./fetch-deps";
 import type { FollowDirection, FollowDirections } from "./fetch-deps";
 import type { IssueInfo, IssueLink, Relation, Relations, DirectionType } from "./issue-types";
@@ -24,6 +24,8 @@ import DepGraph from "./dep-graph";
 import DepTimeline from "./dep-timeline";
 import IssueInfoCard from "./issue-info-card";
 import OptionsDropdownMenu from "./options-dropdown-menu";
+import FilterDropdownMenu, { createFilterState } from "./filter-dropdown-menu";
+import type { FilterState } from "../../../@types/filter-state";
 import VerticalSizeControl from "./vertical-size-control";
 
 // Register widget in YouTrack. To learn more, see https://www.jetbrains.com/help/youtrack/devportal-apps/apps-host-api.html
@@ -129,6 +131,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [followDownstream, setFollowDownstream] = useState<boolean>(false);
   const [fieldInfo, setFieldInfo] = useState<FieldInfo>({});
   const [issueData, setIssueData] = useState<{ [key: string]: IssueInfo }>({});
+  const [filterState, setFilterState] = useState<FilterState>({});
 
   const filterRelations = (
     relations: Relations,
@@ -156,11 +159,12 @@ const AppComponent: React.FunctionComponent = () => {
         followDirs.push("downstream");
       }
       const issues = await fetchDeps(host, issueInfo, maxDepth, relations, followDirs, settings);
+      setFilterState(createFilterState(fieldInfoData));
       setFieldInfo(fieldInfoData);
       setGraphHeight(calcGraphSizeFromIssues(issues));
       setIssueData(issues);
       // Set selected node to the root issue if none selected alrady.
-      setSelectedNode((oldId) => oldId === null ? issueInfo.id : oldId);
+      setSelectedNode((oldId) => (oldId === null ? issueInfo.id : oldId));
 
       setLoading(false);
     } else {
@@ -372,6 +376,11 @@ const AppComponent: React.FunctionComponent = () => {
                 <Tooltip title="Reload data" theme={Theme.LIGHT}>
                   <Button onClick={refreshData} icon={UpdateIcon} />
                 </Tooltip>
+                <FilterDropdownMenu
+                  fieldInfo={fieldInfo}
+                  filterState={filterState}
+                  setFilterState={setFilterState}
+                />
                 <OptionsDropdownMenu
                   maxDepth={maxDepth}
                   maxNodeWidth={maxNodeWidth}
@@ -395,6 +404,7 @@ const AppComponent: React.FunctionComponent = () => {
               issues={issueData}
               selectedIssueId={selectedNode}
               fieldInfo={fieldInfo}
+              filterState={filterState}
               maxNodeWidth={maxNodeWidth}
               setSelectedNode={setSelectedNode}
               onOpenNode={openNode}
@@ -406,6 +416,7 @@ const AppComponent: React.FunctionComponent = () => {
               issues={issueData}
               selectedIssueId={selectedNode}
               fieldInfo={fieldInfo}
+              filterState={filterState}
               maxNodeWidth={maxNodeWidth}
               useHierarchicalLayout={useHierarchicalLayout}
               useDepthRendering={useDepthRendering}

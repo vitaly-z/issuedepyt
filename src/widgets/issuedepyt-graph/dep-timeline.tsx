@@ -13,6 +13,8 @@ import type {
 } from "vis-timeline/types";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
+import { FilterState } from "../../../@types/filter-state";
+import { filterIssues } from "./issue-helpers";
 import { durationToDays, isPastDate } from "./time-utils";
 import { ColorPaletteItem } from "./colors";
 
@@ -20,6 +22,7 @@ interface DepTimelineProps {
   issues: { [id: string]: IssueInfo };
   selectedIssueId: string | null;
   fieldInfo: FieldInfo;
+  filterState: FilterState;
   maxNodeWidth: number | undefined;
   setSelectedNode: (nodeId: string) => void;
   onOpenNode: (nodeId: string) => void;
@@ -75,6 +78,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
   issues,
   selectedIssueId,
   fieldInfo,
+  filterState,
   maxNodeWidth,
   setSelectedNode,
   onOpenNode,
@@ -108,24 +112,10 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
 
   useEffect(() => {
     if (timeline.current && items.current) {
-      console.log(`Rendering timeline with ${Object.keys(issues).length} nodes`);
-      const relations = Object.values(issues).flatMap((issue: IssueInfo) =>
-        [
-          ...(issue.showUpstream ? issue.upstreamLinks : []),
-          ...(issue.showDownstream ? issue.downstreamLinks : []),
-        ].map((link: IssueLink) => ({
-          from: issue.id,
-          to: link.targetId,
-        }))
-      );
-      const visibleIssues = Object.values(issues)
+      const visibleIssues = Object.values(filterIssues(filterState, issues))
         // Only show issues with a due date or start date.
-        .filter((x) => x?.dueDate || x?.startDate)
-        // Only show issues that's shown in the dependency graph, i.e. that they have a visible relation.
-        .filter(
-          (issue: IssueInfo) =>
-            issue.depth === 0 || relations.some((x) => x.from === issue.id || x.to === issue.id)
-        );
+        .filter((x) => x?.dueDate || x?.startDate);
+      console.log(`Rendering timeline with ${Object.keys(visibleIssues).length} nodes`);
       const stateColors = fieldInfo?.stateField ? fieldInfo.stateField.values : {};
       const stateStyles = Object.fromEntries(
         Object.entries(stateColors).map(([k, v]) => [
@@ -190,7 +180,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
       timeline.current.setItems(items.current);
       timeline.current.fit();
     }
-  }, [issues]);
+  }, [issues, filterState]);
 
   useEffect(() => {
     if (timeline.current) {

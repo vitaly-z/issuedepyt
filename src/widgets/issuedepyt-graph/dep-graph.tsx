@@ -3,6 +3,8 @@ import { DataSet } from "vis-data/peer/esm/vis-data";
 import { Network } from "vis-network/standalone/esm/vis-network";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
+import type { FilterState } from "../../../@types/filter-state";
+import { filterIssues } from "./issue-helpers";
 import { ColorPaletteItem, Color, hexToRgb, rgbToHex } from "./colors";
 
 interface DepGraphProps {
@@ -10,6 +12,7 @@ interface DepGraphProps {
   issues: { [id: string]: IssueInfo };
   selectedIssueId: string | null;
   fieldInfo: FieldInfo;
+  filterState: FilterState;
   maxNodeWidth: number | undefined;
   useHierarchicalLayout: boolean;
   useDepthRendering: boolean;
@@ -171,11 +174,6 @@ const getGraphObjects = (
   }
 
   let nodes = Object.values(issues)
-    // Filter stray nodes without any edges.
-    .filter(
-      (issue: IssueInfo) =>
-        issue.depth === 0 || edges.some((edge) => edge.from === issue.id || edge.to === issue.id)
-    )
     // Transform issues to graph nodes.
     .map((issue: IssueInfo) => {
       const colorEntry = getColor(issue.state, fieldInfo?.stateField);
@@ -228,6 +226,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
   issues,
   selectedIssueId,
   fieldInfo,
+  filterState,
   maxNodeWidth,
   useHierarchicalLayout,
   useDepthRendering,
@@ -351,31 +350,32 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
 
   useEffect(() => {
     if (network.current && data.current) {
-      console.log(`Rendering graph with ${Object.keys(issues).length} nodes`);
-      const { nodes, edges } = getGraphObjects(issues, fieldInfo, useDepthRendering);
+      const visibleIssues = filterIssues(filterState, issues);
+      console.log(`Rendering graph with ${Object.keys(visibleIssues).length} nodes`);
+      const { nodes, edges } = getGraphObjects(visibleIssues, fieldInfo, useDepthRendering);
       data.current.nodes.clear();
       data.current.nodes.add(nodes);
       data.current.edges.clear();
       data.current.edges.add(edges);
-      const selectedNode =
-        selectedIssueId != null && selectedIssueId in issues
-          ? issues[selectedIssueId]
-          : Object.values(issues).find((issue) => issue.depth === 0);
+      const selectedNode = selectedIssueId != null ? data.current.nodes.get(selectedIssueId) : null;
       if (selectedNode) {
         // @ts-ignore
         network.current.selectNodes([selectedNode.id]);
+      } else {
+        const rootNode = Object.values(visibleIssues).find((issue) => issue.depth === 0);
+        if (rootNode) {
+          // @ts-ignore
+          network.current.selectNodes([rootNode.id]);
+        }
       }
       // @ts-ignore
       network.current.setData(data.current);
     }
-  }, [issues, fieldInfo, useDepthRendering]);
+  }, [issues, fieldInfo, filterState, useDepthRendering]);
 
   useEffect(() => {
     if (network.current && data.current) {
-      const selectedNode =
-        selectedIssueId != null && selectedIssueId in issues
-          ? issues[selectedIssueId]
-          : Object.values(issues).find((issue) => issue.depth === 0);
+      const selectedNode = selectedIssueId != null ? data.current.nodes.get(selectedIssueId) : null;
       if (selectedNode) {
         console.log(`Graph: Selecting issue ${selectedNode.id}`);
         // @ts-ignore
