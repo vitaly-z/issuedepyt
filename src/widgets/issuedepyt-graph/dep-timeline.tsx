@@ -189,7 +189,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
       items.current.updateOnly(itemsToUpdate);
       // @ts-ignore
       timeline.current.setItems(items.current);
-      timeline.current.fit();
+      timeline.current.fit({ animation: false });
     }
   }, [issues, filterState]);
 
