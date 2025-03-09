@@ -16,7 +16,7 @@ import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import { FilterState } from "../../../@types/filter-state";
 import { filterIssues } from "./issue-helpers";
 import { durationToDays, isPastDate } from "./time-utils";
-import { ColorPaletteItem } from "./colors";
+import { getIssueWork } from "./issue-helpers";
 
 interface DepTimelineProps {
   issues: { [id: string]: IssueInfo };
@@ -33,20 +33,24 @@ const FONT_FAMILY_MONOSPACE =
   'Menlo, "Bitstream Vera Sans Mono", "Ubuntu Mono", Consolas, "Courier New", Courier, monospace';
 
 const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
-  let lines = [`<b>${issue.idReadable}</b>`];
+  let lines = [`<b>${issue.idReadable}</b>: ${issue.summary}`];
+  const { estimatedDays, scheduledDays, workFactor } = getIssueWork(issue);
   if (issue?.dueDate) {
     const today = new Date();
     if (isOverdue) {
-      // Due date was in the past.
-      const daysAgo = durationToDays(today.getTime()) - durationToDays(issue.dueDate.getTime());
-      const maybeS = daysAgo > 1 ? "s" : "";
-      lines.push(`${issue.idReadable} is overdue!`);
+      lines.push(`<i>Overdue!</i>`);
+    }
+    // Due date was in the past.
+    const daysToDueDate = durationToDays(issue.dueDate.getTime()) - durationToDays(today.getTime());
+    const maybeS = Math.abs(daysToDueDate) > 1 ? "s" : "";
+    if (daysToDueDate < 0) {
+      const daysAgo = Math.abs(daysToDueDate);
       lines.push(`Due date was ${daysAgo} day${maybeS} ago on ${issue.dueDate.toDateString()}.`);
     } else {
       // Due date is future.
-      const daysUntil = durationToDays(issue.dueDate.getTime()) - durationToDays(today.getTime());
-      const maybeS = daysUntil > 1 ? "s" : "";
-      lines.push(`Due date is in ${daysUntil} day${maybeS} on ${issue.dueDate.toDateString()}.`);
+      lines.push(
+        `Due date is in ${daysToDueDate} day${maybeS} on ${issue.dueDate.toDateString()}.`
+      );
     }
   }
   if (issue?.startDate) {
@@ -67,8 +71,15 @@ const getTooltip = (issue: IssueInfo, isOverdue: boolean): string => {
       );
     }
   }
+  if (scheduledDays) {
+    lines.push(`Scheduled to ${scheduledDays} business days.`);
+  }
   if (issue?.estimation) {
-    lines.push(`Estimation: ${issue.estimation.presentation}.`);
+    const maybeEstimatedDays = estimatedDays != undefined ? `(${estimatedDays} days)` : "";
+    lines.push(`Estimated to ${[issue.estimation.presentation, maybeEstimatedDays].join(" ")}.`);
+    if (workFactor != undefined) {
+      lines.push(`A work factor of ${workFactor.toFixed(2)} estimated over planned period.`);
+    }
   }
 
   return lines.join("<br/>");
@@ -120,7 +131,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
       const stateStyles = Object.fromEntries(
         Object.entries(stateColors).map(([k, v]) => [
           k,
-          `color: ${v.foreground}; background-color: ${v.background}`,
+          `color: ${v.foreground}; background-color: ${v.background};`,
         ])
       );
       const timelineItems: Array<TimelineItem> = visibleIssues.map((issue) => {
