@@ -7,8 +7,8 @@
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "version": "1.3.0",
-  "changeNotes": "Version 1.3.0:\nAdd setting for estimation field.\nShow estimation in graph and timeline.\nFix state fields controlled by state machine.\nFix load of deps from draft tickets.\nImprove support for undirected links.",
+  "version": "1.3.1",
+  "changeNotes": "Version 1.3.1:\nAdd filtering by issue type and state.\nAdd zoom-fit and zoom selected into view controls to timeline.\nAdd filtering by issue type and state.\nMenu now closes first click on close.",
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
   "widgets": [
