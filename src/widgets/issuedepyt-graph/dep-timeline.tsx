@@ -1,4 +1,10 @@
 import React, { useEffect, useRef } from "react";
+import Button from "@jetbrains/ring-ui-built/components/button/button";
+import FullscreenIcon from "@jetbrains/icons/fullscreen";
+import SearchIcon from "@jetbrains/icons/search";
+import Group from "@jetbrains/ring-ui-built/components/group/group";
+import Tooltip from "@jetbrains/ring-ui-built/components/tooltip/tooltip";
+import Theme from "@jetbrains/ring-ui-built/components/global/theme";
 import { DataSet } from "vis-data/peer/esm/vis-data";
 import { Timeline } from "vis-timeline";
 import type {
@@ -193,6 +199,21 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
     }
   }, [issues, filterState]);
 
+  const fitTimeline = () => {
+    if (timeline.current) {
+      timeline.current.fit({ animation: true });
+    }
+  };
+  const focusSelected = () => {
+    if (timeline.current) {
+      const selectedId = timeline.current.getSelection();
+      if (selectedId.length === 0) {
+        return;
+      }
+      timeline.current.focus(selectedId);
+    }
+  };
+
   useEffect(() => {
     if (timeline.current) {
       if (selectedIssueId) {
@@ -204,7 +225,20 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
     }
   }, [selectedIssueId]);
 
-  return <div ref={containerRef} className="dep-timeline" />;
+  return (
+    <div ref={containerRef} className="dep-timeline">
+      <div className="dep-timeline-controls">
+        <Group>
+          <Tooltip title={"Zoom to focus on selected item"} theme={Theme.LIGHT}>
+            <Button icon={SearchIcon} onClick={() => focusSelected()} />
+          </Tooltip>
+          <Tooltip title={"Zoom to fit all items into view"} theme={Theme.LIGHT}>
+            <Button icon={FullscreenIcon} onClick={() => fitTimeline()} />
+          </Tooltip>
+        </Group>
+      </div>
+    </div>
+  );
 };
 
 export default DepTimeline;

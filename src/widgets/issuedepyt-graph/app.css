@@ -176,8 +176,17 @@ div.vis-timeline {
 }
 
 div.dep-timeline {
+  position: relative;
   margin-top: calc(var(--ring-unit) / 2);
   margin-bottom: calc(var(--ring-unit) / 2);
+}
+
+div.dep-timeline-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+  z-index: 9999;
 }
 
 div.dep-graph {
