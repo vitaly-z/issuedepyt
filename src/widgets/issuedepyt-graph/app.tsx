@@ -25,6 +25,7 @@ import DepTimeline from "./dep-timeline";
 import IssueInfoCard from "./issue-info-card";
 import OptionsDropdownMenu from "./options-dropdown-menu";
 import FilterDropdownMenu, { createFilterState } from "./filter-dropdown-menu";
+import SearchDropdownMenu from "./search-dropdown-menu";
 import type { FilterState } from "../../../@types/filter-state";
 import VerticalSizeControl from "./vertical-size-control";
 
@@ -121,6 +122,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [timelineVisible, setTimelineVisible] = useState<boolean>(false);
   const [graphHeight, setGraphHeight] = useState<number>(400);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [highlightedNodes, setHighlightedNodes] = useState<Array<string>>([]);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
@@ -145,6 +147,11 @@ const AppComponent: React.FunctionComponent = () => {
     downstream: followDown ? relations.downstream : [],
   });
 
+  const selectNode = (nodeId: string) => {
+    setHighlightedNodes([]);
+    setSelectedNode(nodeId);
+  };
+
   const refreshData = async () => {
     if (graphVisible) {
       setLoading(true);
@@ -168,6 +175,7 @@ const AppComponent: React.FunctionComponent = () => {
       setIssueData(issues);
       // Set selected node to the root issue if none selected alrady.
       setSelectedNode((oldId) => (oldId === null ? issueInfo.id : oldId));
+      setHighlightedNodes([]);
 
       setLoading(false);
     } else {
@@ -379,6 +387,11 @@ const AppComponent: React.FunctionComponent = () => {
                 <Tooltip title="Reload data" theme={Theme.LIGHT}>
                   <Button onClick={refreshData} icon={UpdateIcon} />
                 </Tooltip>
+                <SearchDropdownMenu
+                  fieldInfo={fieldInfo}
+                  issueData={issueData}
+                  setHighlightedNodes={setHighlightedNodes}
+                />
                 <FilterDropdownMenu
                   fieldInfo={fieldInfo}
                   filterState={filterState}
@@ -409,7 +422,7 @@ const AppComponent: React.FunctionComponent = () => {
               fieldInfo={fieldInfo}
               filterState={filterState}
               maxNodeWidth={maxNodeWidth}
-              setSelectedNode={setSelectedNode}
+              setSelectedNode={selectNode}
               onOpenNode={openNode}
             />
           )}
@@ -418,12 +431,13 @@ const AppComponent: React.FunctionComponent = () => {
               height={`${graphHeight}px`}
               issues={issueData}
               selectedIssueId={selectedNode}
+              highlightedIssueIds={highlightedNodes}
               fieldInfo={fieldInfo}
               filterState={filterState}
               maxNodeWidth={maxNodeWidth}
               useHierarchicalLayout={useHierarchicalLayout}
               useDepthRendering={useDepthRendering}
-              setSelectedNode={setSelectedNode}
+              setSelectedNode={selectNode}
               onOpenNode={openNode}
             />
           )}
