@@ -1,16 +1,10 @@
 import React, { useRef, useState } from "react";
-import DropdownMenu, {
-  DropdownMenuProps,
-} from "@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu";
-import { Directions } from "@jetbrains/ring-ui-built/components/popup/popup.consts";
+import DropdownMenu from "@jetbrains/ring-ui-built/components/dropdown-menu/dropdown-menu";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Checkbox from "@jetbrains/ring-ui-built/components/checkbox/checkbox";
-import Icon from "@jetbrains/ring-ui-built/components/icon/icon";
-import Group from "@jetbrains/ring-ui-built/components/group/group";
-import { ListDataItem } from "@jetbrains/ring-ui-built/components/list/consts";
 import FilterIcon from "@jetbrains/icons/filter";
 import CloseIcon from "@jetbrains/icons/close";
-import ChevronRightIcon from "@jetbrains/icons/chevron-right";
+import NestedMenuItem from "./nested-menu-item";
 import type { FieldInfo, FieldInfoKey } from "../../../@types/field-info";
 import type { FilterState, FilterStateKey } from "../../../@types/filter-state";
 
@@ -18,12 +12,6 @@ interface FilterDropdownMenuProps {
   fieldInfo: FieldInfo;
   filterState: FilterState;
   setFilterState: (value: FilterState) => void;
-}
-
-interface NestedMenuProps {
-  title: string;
-  data?: ListDataItem[];
-  children?: React.ReactNode;
 }
 
 export const createFilterState = (fieldInfo: FieldInfo): FilterState => {
@@ -43,48 +31,6 @@ export const createFilterState = (fieldInfo: FieldInfo): FilterState => {
     }
   }
   return filterState;
-};
-
-const NestedMenuItem = (props: NestedMenuProps) => {
-  const anchor: DropdownMenuProps["anchor"] = ({ active }, ariaProps = {}) => (
-    <Group
-      role="menu"
-      className="nested-menu-item"
-      {...{
-        "aria-expanded": active,
-        "aria-label": props.title,
-      }}
-      {...ariaProps}
-    >
-      <span className="nested-menu-title">{props.title}</span>
-      <Icon glyph={ChevronRightIcon} className="chevron-icon" />
-    </Group>
-  );
-  const dropdownProps: DropdownMenuProps = {
-    hoverMode: true,
-    hoverShowTimeOut: 50,
-    hoverHideTimeOut: 100,
-    anchor,
-  };
-  const menuProps: DropdownMenuProps["menuProps"] = {
-    directions: [
-      Directions.RIGHT_BOTTOM,
-      Directions.LEFT_BOTTOM,
-      Directions.RIGHT_TOP,
-      Directions.LEFT_TOP,
-    ],
-    left: 20,
-    top: -12,
-    minWidth: 150,
-    ["data-test"]: "nested-menu",
-    hidden: false,
-    activateFirstItem: false,
-  };
-  if (props.data) {
-    // dropdown menu has automatic support for aria-navigation
-    return <DropdownMenu {...dropdownProps} data={props.data} menuProps={menuProps} />;
-  }
-  return <DropdownMenu {...dropdownProps} menuProps={menuProps} />;
 };
 
 const FilterDropdownMenu: React.FunctionComponent<FilterDropdownMenuProps> = ({
