@@ -11,7 +11,7 @@ interface DepGraphProps {
   height: string;
   issues: { [id: string]: IssueInfo };
   selectedIssueId: string | null;
-  highlightedIssueIds: string[];
+  highlightedIssueIds: string[] | null;
   fieldInfo: FieldInfo;
   filterState: FilterState;
   maxNodeWidth: number | undefined;
@@ -239,6 +239,29 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
   const network = useRef(null);
   const data = useRef({ nodes: new DataSet(), edges: new DataSet() });
 
+  const updateSelectedNodes = (selectedId: string | null, highlightedIds: Array<string> | null) => {
+    if (!network.current || !data.current) {
+      return;
+    }
+    const selectedIds = [];
+    let selectEdges = false;
+    if (highlightedIds !== null) {
+      selectedIds.push(...highlightedIds);
+    } else if (selectedId != null) {
+      selectEdges = true;
+      selectedIds.push(selectedId);
+    }
+    const availableSelectedIds = selectedIds.filter((id) => data.current.nodes.get(id) !== null);
+    if (availableSelectedIds.length > 0) {
+      console.log(`Graph: Selecting issues ${availableSelectedIds.join(", ")}`);
+      // @ts-ignore
+      network.current.selectNodes(availableSelectedIds, selectEdges);
+    } else {
+      // @ts-ignore
+      network.current.selectNodes([]);
+    }
+  };
+
   useEffect(() => {
     if (containerRef.current && data.current) {
       const options = {
@@ -359,46 +382,14 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
       data.current.nodes.add(nodes);
       data.current.edges.clear();
       data.current.edges.add(edges);
-      const selectedIds = [...highlightedIssueIds];
-      let selectEdges = false;
-      if (selectedIds.length == 0 && selectedIssueId != null) {
-        selectedIds.push(selectedIssueId);
-        selectEdges = true;
-      }
-      const availableSelectedIds = selectedIds.filter((id) => data.current.nodes.get(id) !== null);
-      if (availableSelectedIds.length > 0) {
-        // @ts-ignore
-        network.current.selectNodes(availableSelectedIds, selectEdges);
-      } else {
-        const rootNode = Object.values(visibleIssues).find((issue) => issue.depth === 0);
-        if (rootNode) {
-          // @ts-ignore
-          network.current.selectNodes([rootNode.id]);
-        }
-      }
+      updateSelectedNodes(selectedIssueId, highlightedIssueIds);
       // @ts-ignore
       network.current.setData(data.current);
     }
   }, [issues, fieldInfo, filterState, useDepthRendering]);
 
   useEffect(() => {
-    if (network.current && data.current) {
-      const selectedIds = [...highlightedIssueIds];
-      let selectEdges = false;
-      if (selectedIds.length == 0 && selectedIssueId != null) {
-        selectEdges = true;
-        selectedIds.push(selectedIssueId);
-      }
-      const availableSelectedIds = selectedIds.filter((id) => data.current.nodes.get(id) !== null);
-      if (availableSelectedIds.length > 0) {
-        console.log(`Graph: Selecting issues ${availableSelectedIds.join(", ")}`);
-        // @ts-ignore
-        network.current.selectNodes(availableSelectedIds, selectEdges);
-      } else {
-        // @ts-ignore
-        network.current.selectNodes([]);
-      }
-    }
+    updateSelectedNodes(selectedIssueId, highlightedIssueIds);
   }, [selectedIssueId, highlightedIssueIds]);
 
   return <div ref={containerRef} className="dep-graph" style={{ height }} />;

@@ -11,7 +11,7 @@ import type { FieldInfo, FieldInfoKey } from "../../../@types/field-info";
 interface SearchDropdownMenuProps {
   fieldInfo: FieldInfo;
   issueData: { [key: string]: IssueInfo };
-  setHighlightedNodes: (value: Array<string>) => void;
+  setHighlightedNodes: (value: Array<string> | null) => void;
 }
 
 const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
@@ -38,7 +38,7 @@ const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
     template: (
       <Button
         onClick={(e: any) => {
-          setHighlightedNodes([]);
+          setHighlightedNodes(null);
         }}
       >
         Clear

@@ -122,7 +122,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [timelineVisible, setTimelineVisible] = useState<boolean>(false);
   const [graphHeight, setGraphHeight] = useState<number>(400);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [highlightedNodes, setHighlightedNodes] = useState<Array<string>>([]);
+  const [highlightedNodes, setHighlightedNodes] = useState<Array<string> | null>(null);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
   const [useHierarchicalLayout, setUseHierarchicalLayout] = useState<boolean>(
@@ -148,7 +148,7 @@ const AppComponent: React.FunctionComponent = () => {
   });
 
   const selectNode = (nodeId: string) => {
-    setHighlightedNodes([]);
+    setHighlightedNodes(null);
     setSelectedNode(nodeId);
   };
 
@@ -175,7 +175,7 @@ const AppComponent: React.FunctionComponent = () => {
       setIssueData(issues);
       // Set selected node to the root issue if none selected alrady.
       setSelectedNode((oldId) => (oldId === null ? issueInfo.id : oldId));
-      setHighlightedNodes([]);
+      setHighlightedNodes(null);
 
       setLoading(false);
     } else {
