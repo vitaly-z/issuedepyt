@@ -30,6 +30,12 @@ export interface IssuePeriod {
   minutes: number;
 }
 
+export interface SprintType {
+  name: string;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
 export interface IssueInfo {
   id: string;
   idReadable: string;
@@ -37,6 +43,7 @@ export interface IssueInfo {
   summary: string;
   type?: string;
   state?: string;
+  sprints?: Array<SprintType>;
   assignee?: string;
   startDate: Date | null;
   dueDate: Date | null;

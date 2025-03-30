@@ -99,7 +99,6 @@ const getCustomFieldValue = (
     type === "SingleEnumIssueCustomField" ||
     type === "SingleGroupIssueCustomField" ||
     type === "SingleOwnedIssueCustomField" ||
-    type === "SingleVersionIssueCustomField" ||
     type === "StateIssueCustomField" ||
     type === "StateMachineIssueCustomField"
   ) {
@@ -115,10 +114,25 @@ const getCustomFieldValue = (
     type === "MultiEnumIssueCustomField" ||
     type === "MultiGroupIssueCustomField" ||
     type === "MultiOwnedIssueCustomField" ||
-    type === "MultiBuildIssueCustomField" ||
-    type === "MultiVersionIssueCustomField"
+    type === "MultiBuildIssueCustomField"
   ) {
     return value.map((item: any) => item.name);
+  }
+  if (type === "SingleVersionIssueCustomField") {
+    return [
+      {
+        name: value.name,
+        startDate: value.startDate,
+        endDate: value.endDate,
+      },
+    ];
+  }
+  if (type === "MultiVersionIssueCustomField") {
+    return value.map((item: any) => ({
+      name: item.name,
+      startDate: item.startDate,
+      endDate: item.endDate,
+    }));
   }
   console.log("Warning! Unknown custom field type for field", field);
   return null;
@@ -195,6 +209,7 @@ async function fetchDepsRecursive(
       summary: issue.summary,
       type: getCustomFieldValue(settings?.typeField, issue.customFields),
       state: getCustomFieldValue(settings?.stateField, issue.customFields),
+      sprints: getCustomFieldValue(settings?.sprintsField, issue.customFields),
       assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields),
       startDate: getCustomFieldValue(settings?.startDateField, issue.customFields),
       dueDate: getCustomFieldValue(settings?.dueDateField, issue.customFields),
@@ -248,6 +263,7 @@ async function fetchDepsRecursive(
         summary: link.summary,
         type: link.type,
         state: link.state,
+        sprints: link.sprints,
         assignee: link.assignee,
         startDate: link.startDate,
         dueDate: link.dueDate,
@@ -371,6 +387,7 @@ export async function fetchIssueAndInfo(
     summary: issueInfo.summary,
     type: getCustomFieldValue(settings?.typeField, issueInfo.customFields),
     state: getCustomFieldValue(settings?.stateField, issueInfo.customFields),
+    sprints: getCustomFieldValue(settings?.sprintsField, issueInfo.customFields),
     assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields),
     startDate: getCustomFieldValue(settings?.startDateField, issueInfo.customFields),
     dueDate: getCustomFieldValue(settings?.dueDateField, issueInfo.customFields),

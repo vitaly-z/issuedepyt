@@ -104,6 +104,8 @@ const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
     ["Highlight root node", (x: IssueInfo) => x.depth == 0],
     ["Highlight assigned", (x: IssueInfo) => x.assignee != null],
     ["Highlight unassigned", (x: IssueInfo) => x.assignee == null],
+    ["Highlight planned", (x: IssueInfo) => x?.sprints != null && x.sprints.length > 0],
+    ["Highlight unplanned", (x: IssueInfo) => !(x?.sprints != null && x.sprints.length > 0)],
     ["Highlight resolved", (x: IssueInfo) => x.resolved],
     ["Highlight unresolved", (x: IssueInfo) => !x.resolved],
     ["Highlight with start date", (x: IssueInfo) => !!x.startDate],

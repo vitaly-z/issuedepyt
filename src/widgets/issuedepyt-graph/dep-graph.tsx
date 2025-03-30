@@ -78,9 +78,7 @@ const getNodeLabel = (issue: IssueInfo): string => {
     flags.push(issue.state);
   }
   flags.push(issue?.assignee ? "Assigned" : "Unassigned");
-  if (issue?.dueDate) {
-    flags.push("Due Date");
-  }
+  flags.push(issue?.sprints && issue.sprints.length > 0 ? "Planned" : "Unplanned");
   if (flags.length > 0) {
     lines.push(`<code>[${flags.join(", ")}]</code>`);
   }

@@ -83,6 +83,9 @@ const IssueInfoCard: React.FunctionComponent<IssueInfoCardProps> = ({ issue }) =
   if (issue?.assignee != undefined) {
     fields.push({ name: "Assignee", value: issue.assignee });
   }
+  if (issue?.sprints && issue.sprints.length > 0) {
+    fields.push({ name: "Sprints", value: issue.sprints.map((x) => x.name).join(", ") });
+  }
   if (issue?.startDate) {
     fields.push({ name: "Start Date", value: issue.startDate.toDateString() });
   }

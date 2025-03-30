@@ -20,6 +20,14 @@
       "minLength": 1,
       "x-scope": "PROJECT"
     },
+    "sprintsField": {
+      "type": "string",
+      "title": "Sprints field name",
+      "description": "Name of the sprints field.",
+      "default": "Sprints",
+      "minLength": 1,
+      "x-scope": "PROJECT"
+    },
     "assigneeField": {
       "type": "string",
       "title": "Assignee field name",
