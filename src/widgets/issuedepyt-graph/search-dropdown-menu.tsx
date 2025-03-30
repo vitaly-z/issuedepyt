@@ -7,16 +7,19 @@ import CloseIcon from "@jetbrains/icons/close";
 import NestedMenuItem from "./nested-menu-item";
 import type { IssueInfo } from "./issue-types";
 import type { FieldInfo, FieldInfoKey } from "../../../@types/field-info";
+import type { Settings } from "../../../@types/settings";
 
 interface SearchDropdownMenuProps {
   fieldInfo: FieldInfo;
   issueData: { [key: string]: IssueInfo };
+  settings: Settings;
   setHighlightedNodes: (value: Array<string> | null) => void;
 }
 
 const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
   fieldInfo,
   issueData,
+  settings,
   setHighlightedNodes,
 }) => {
   const [open, setOpen] = useState<boolean>(false);
@@ -102,19 +105,35 @@ const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
   }
   const searches: Array<[string, (issue: IssueInfo) => boolean]> = [
     ["Highlight root node", (x: IssueInfo) => x.depth == 0],
-    ["Highlight assigned", (x: IssueInfo) => x.assignee != null],
-    ["Highlight unassigned", (x: IssueInfo) => x.assignee == null],
-    ["Highlight planned", (x: IssueInfo) => x?.sprints != null && x.sprints.length > 0],
-    ["Highlight unplanned", (x: IssueInfo) => !(x?.sprints != null && x.sprints.length > 0)],
     ["Highlight resolved", (x: IssueInfo) => x.resolved],
     ["Highlight unresolved", (x: IssueInfo) => !x.resolved],
-    ["Highlight with start date", (x: IssueInfo) => !!x.startDate],
-    ["Highlight no start date", (x: IssueInfo) => !x.startDate],
-    ["Highlight with due date", (x: IssueInfo) => !!x.dueDate],
-    ["Highlight no due date", (x: IssueInfo) => !x.dueDate],
-    ["Highlight estimated", (x: IssueInfo) => !!x.estimation],
-    ["Highlight non-estimated", (x: IssueInfo) => !x.estimation],
   ];
+  if (settings?.assigneeField) {
+    searches.push(["Highlight assigned", (x: IssueInfo) => x.assignee != null]);
+    searches.push(["Highlight unassigned", (x: IssueInfo) => x.assignee == null]);
+  }
+  if (settings?.sprintsField) {
+    searches.push([
+      "Highlight planned",
+      (x: IssueInfo) => x?.sprints != null && x.sprints.length > 0,
+    ]);
+    searches.push([
+      "Highlight unplanned",
+      (x: IssueInfo) => !(x?.sprints != null && x.sprints.length > 0),
+    ]);
+  }
+  if (settings?.startDateField) {
+    searches.push(["Highlight with start date", (x: IssueInfo) => !!x.startDate]);
+    searches.push(["Highlight no start date", (x: IssueInfo) => !x.startDate]);
+  }
+  if (settings?.dueDateField) {
+    searches.push(["Highlight with due date", (x: IssueInfo) => !!x.dueDate]);
+    searches.push(["Highlight no due date", (x: IssueInfo) => !x.dueDate]);
+  }
+  if (settings?.estimationField) {
+    searches.push(["Highlight estimated", (x: IssueInfo) => !!x.estimation]);
+    searches.push(["Highlight non-estimated", (x: IssueInfo) => !x.estimation]);
+  }
   items.push(
     ...searches.map(([label, filterFunc]) => ({
       rgItemType: DropdownMenu.ListProps.Type.CUSTOM,

@@ -391,6 +391,7 @@ const AppComponent: React.FunctionComponent = () => {
                 <SearchDropdownMenu
                   fieldInfo={fieldInfo}
                   issueData={issueData}
+                  settings={settings}
                   setHighlightedNodes={setHighlightedNodes}
                 />
                 <FilterDropdownMenu
