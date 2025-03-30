@@ -220,12 +220,12 @@ div.vis-network div.vis-navigation div.vis-button:hover {
 
 .vis-button:after {
   font-size: 2em;
-  color: #878787;
+  color: var(--ring-secondary-color);
 }
 
 .vis-button:hover:after {
   font-size: 2em;
-  color: #bababa;
+  color: var(--ring-main-hover-color);
 }
 
 .vis-button.vis-up:after {
