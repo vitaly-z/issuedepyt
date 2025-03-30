@@ -101,6 +101,7 @@ const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
     }
   }
   const searches: Array<[string, (issue: IssueInfo) => boolean]> = [
+    ["Highlight root node", (x: IssueInfo) => x.depth == 0],
     ["Highlight assigned", (x: IssueInfo) => x.assignee != null],
     ["Highlight unassigned", (x: IssueInfo) => x.assignee == null],
     ["Highlight resolved", (x: IssueInfo) => x.resolved],
