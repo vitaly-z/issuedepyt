@@ -77,8 +77,12 @@ const getNodeLabel = (issue: IssueInfo): string => {
   if (issue?.state) {
     flags.push(issue.state);
   }
-  flags.push(issue?.assignee ? "Assigned" : "Unassigned");
-  flags.push(issue?.sprints && issue.sprints.length > 0 ? "Planned" : "Unplanned");
+  if (issue.hasOwnProperty("assignee")) {
+    flags.push(issue?.assignee ? "Assigned" : "Unassigned");
+  }
+  if (issue?.sprints) {
+    flags.push(issue.sprints.length > 0 ? "Planned" : "Unplanned");
+  }
   if (flags.length > 0) {
     lines.push(`<code>[${flags.join(", ")}]</code>`);
   }
@@ -97,6 +101,12 @@ const getNodeTooltip = (issue: IssueInfo): string => {
   }
   if (issue?.assignee != undefined && issue.assignee.length > 0) {
     lines.push(`Assignee: ${issue.assignee}`);
+  }
+  if (issue?.sprints) {
+    lines.push(
+      "Sprints: " +
+        (issue.sprints.length > 0 ? issue.sprints.map((x) => x.name).join(", ") : "Unplanned")
+    );
   }
   if (issue?.startDate) {
     lines.push(`Start date: ${issue.startDate.toDateString()}`);

@@ -207,10 +207,18 @@ async function fetchDepsRecursive(
       isDraft: issue.isDraft,
       sourceId: issueID,
       summary: issue.summary,
-      type: getCustomFieldValue(settings?.typeField, issue.customFields),
-      state: getCustomFieldValue(settings?.stateField, issue.customFields),
-      sprints: getCustomFieldValue(settings?.sprintsField, issue.customFields),
-      assignee: getCustomFieldValue(settings?.assigneeField, issue.customFields),
+      ...(settings?.typeField && {
+        type: getCustomFieldValue(settings.typeField, issue.customFields),
+      }),
+      ...(settings?.stateField && {
+        state: getCustomFieldValue(settings.stateField, issue.customFields),
+      }),
+      ...(settings?.sprintsField && {
+        sprints: getCustomFieldValue(settings.sprintsField, issue.customFields),
+      }),
+      ...(settings?.assigneeField && {
+        assignee: getCustomFieldValue(settings.assigneeField, issue.customFields),
+      }),
       startDate: getCustomFieldValue(settings?.startDateField, issue.customFields),
       dueDate: getCustomFieldValue(settings?.dueDateField, issue.customFields),
       estimation: getCustomFieldValue(settings?.estimationField, issue.customFields),
@@ -385,10 +393,18 @@ export async function fetchIssueAndInfo(
     idReadable: issueInfo.isDraft ? `Draft ${issueInfo.id}` : issueInfo.idReadable,
     isDraft: issueInfo.isDraft,
     summary: issueInfo.summary,
-    type: getCustomFieldValue(settings?.typeField, issueInfo.customFields),
-    state: getCustomFieldValue(settings?.stateField, issueInfo.customFields),
-    sprints: getCustomFieldValue(settings?.sprintsField, issueInfo.customFields),
-    assignee: getCustomFieldValue(settings?.assigneeField, issueInfo.customFields),
+    ...(settings?.typeField && {
+      type: getCustomFieldValue(settings.typeField, issueInfo.customFields),
+    }),
+    ...(settings?.stateField && {
+      state: getCustomFieldValue(settings.stateField, issueInfo.customFields),
+    }),
+    ...(settings?.sprintsField && {
+      sprints: getCustomFieldValue(settings.sprintsField, issueInfo.customFields),
+    }),
+    ...(settings?.assigneeField && {
+      assignee: getCustomFieldValue(settings.assigneeField, issueInfo.customFields),
+    }),
     startDate: getCustomFieldValue(settings?.startDateField, issueInfo.customFields),
     dueDate: getCustomFieldValue(settings?.dueDateField, issueInfo.customFields),
     estimation: getCustomFieldValue(settings?.estimationField, issueInfo.customFields),
