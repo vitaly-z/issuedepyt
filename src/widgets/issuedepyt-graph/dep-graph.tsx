@@ -84,7 +84,7 @@ const getNodeLabel = (issue: IssueInfo): string => {
     flags.push(issue.sprints.length > 0 ? "Planned" : "Unplanned");
   }
   if (flags.length > 0) {
-    lines.push(`<code>[${flags.join(", ")}]</code>`);
+    lines.push(flags.join(", "));
   }
 
   return lines.join("\n");
