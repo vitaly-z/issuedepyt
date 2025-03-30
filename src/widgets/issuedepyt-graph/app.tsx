@@ -173,9 +173,10 @@ const AppComponent: React.FunctionComponent = () => {
       setFieldInfo(fieldInfoData);
       setGraphHeight(calcGraphSizeFromIssues(issues));
       setIssueData(issues);
-      // Set selected node to the root issue if none selected alrady.
-      setSelectedNode((oldId) => (oldId === null ? issueInfo.id : oldId));
+      // Remove highlight.
       setHighlightedNodes(null);
+      // Set selected node to the root issue if none selected already.
+      setSelectedNode((oldId) => (oldId === null ? issueInfo.id : oldId));
 
       setLoading(false);
     } else {

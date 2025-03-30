@@ -196,10 +196,6 @@ const getGraphObjects = (
           },
         };
       }
-      if (issue.depth == 0) {
-        node.borderWidth = 2;
-        node.borderWidthSelected = 3;
-      }
       if (!issue.linksKnown) {
         node.shapeProperties = {
           borderDashes: [5, 5],
@@ -302,11 +298,18 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
               face: FONT_FAMILY_MONOSPACE,
             },
           },
+          chosen: {
+            node: (values: any, id: string, selected: boolean, hovering: boolean) => {
+              if (selected) {
+                values.shadow = true;
+                values.shadowColor = Color.MessageShadowColor;
+                values.borderWidth = 2;
+                values.borderColor = Color.TextColor;
+              }
+            },
+          },
           color: {
             border: Color.SecondaryColor,
-            highlight: {
-              border: Color.TextColor,
-            },
           },
           widthConstraint: {
             maximum: maxNodeWidth,
