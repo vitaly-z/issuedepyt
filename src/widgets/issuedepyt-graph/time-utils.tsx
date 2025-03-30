@@ -14,35 +14,26 @@ export const durationToDays = (duration: DurationMs): number => {
 };
 
 /** Convert date diff to business days.
- * Implementation taken from https://snipplr.com/view/4086/calculate-business-days-between-two-dates
+ * Implementation taken from https://stackoverflow.com/a/51091790
  */
-export const calcBusinessDays = (dDate1: Date, dDate2: Date): number => {
-  var iAdjust = 0;
-
-  if (dDate2 < dDate1) return -1; // error code if dates transposed
-
-  var iWeekday1 = dDate1.getDay(); // day of week
-  var iWeekday2 = dDate2.getDay();
-
-  iWeekday1 = iWeekday1 == 0 ? 7 : iWeekday1; // change Sunday from 0 to 7
-  iWeekday2 = iWeekday2 == 0 ? 7 : iWeekday2;
-
-  if (iWeekday1 > 5 && iWeekday2 > 5) iAdjust = 1; // adjustment if both days on weekend
-
-  iWeekday1 = iWeekday1 > 5 ? 5 : iWeekday1; // only count weekdays
-  iWeekday2 = iWeekday2 > 5 ? 5 : iWeekday2;
-
-  // calculate differnece in weeks (1000mS * 60sec * 60min * 24hrs * 7 days = 604800000)
-  const iWeeks = Math.floor((dDate2.getTime() - dDate1.getTime()) / 604800000);
-
-  var iDateDiff;
-  if (iWeekday1 <= iWeekday2) {
-    iDateDiff = iWeeks * 5 + (iWeekday2 - iWeekday1);
-  } else {
-    iDateDiff = (iWeeks + 1) * 5 - (iWeekday1 - iWeekday2);
+export const calcBusinessDays = (startDate: Date, endDate: Date): number => {
+  if (startDate > endDate) {
+    return -1;
   }
+  // Add 1 since dates are inclusive.
+  const ONE_DAY = 1000 * 60 * 60 * 24;
+  const endDateAdjusted = new Date(endDate.getTime() + ONE_DAY);
+  const numDays = durationToDays(getDuration(startDate, endDateAdjusted));
 
-  iDateDiff -= iAdjust; // take into account both days on weekend
+  // a + b is number of extra days needed to expand total to full weeks.
+  const a = startDate.getDay();
+  const b = 6 - endDate.getDay();
 
-  return iDateDiff + 1; // add 1 because dates are inclusive
+  const WEEKDAYS_PER_WORKWEEK = 1.4; // 7 / 5.
+
+  // Calculate number of weekend days.
+  const m = [0, 0, 1, 2, 3, 4, 5];
+  const numWeekendDays = m[a] + m[b];
+
+  return Math.floor((numDays + a + b) / WEEKDAYS_PER_WORKWEEK) - numWeekendDays;
 };
