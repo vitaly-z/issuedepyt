@@ -356,8 +356,8 @@ const AppComponent: React.FunctionComponent = () => {
               <Group>
                 <Tooltip
                   title={
-                    !settings?.dueDateField
-                      ? "No due date field configured for project!"
+                    !(settings?.dueDateField || settings?.sprintsField)
+                      ? "No due date or sprints field configured for project!"
                       : undefined
                   }
                   theme={Theme.LIGHT}
@@ -366,7 +366,7 @@ const AppComponent: React.FunctionComponent = () => {
                     size={ToggleSize.Size14}
                     checked={timelineVisible}
                     onChange={(e: any) => setTimelineVisible(e.target.checked)}
-                    disabled={!settings?.dueDateField}
+                    disabled={!(settings?.dueDateField || settings?.sprintsField)}
                   >
                     Show timeline
                   </Toggle>

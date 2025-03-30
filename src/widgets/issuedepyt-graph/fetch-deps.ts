@@ -18,7 +18,7 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
     id,idReadable,summary,resolved,isDraft,
     customFields(
       name,
-      value(name,fullName,presentation,minutes,text),
+      value(name,fullName,startDate,releaseDate,presentation,minutes,text),
       projectCustomField(
         name,
         bundle(
@@ -48,7 +48,7 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
       id,idReadable,summary,resolved,isDraft,
       customFields(
         name,
-        value(name,fullName,presentation,minutes,text)
+        value(name,fullName,startDate,releaseDate,presentation,minutes,text)
       )
     )`.replace(/\s+/g, "");
 
@@ -122,16 +122,16 @@ const getCustomFieldValue = (
     return [
       {
         name: value.name,
-        startDate: value.startDate,
-        endDate: value.endDate,
+        startDate: value.startDate != null ? new Date(value.startDate) : null,
+        endDate: value.releaseDate != null ? new Date(value.releaseDate) : null,
       },
     ];
   }
   if (type === "MultiVersionIssueCustomField") {
     return value.map((item: any) => ({
       name: item.name,
-      startDate: item.startDate,
-      endDate: item.endDate,
+      startDate: item.startDate != null ? new Date(item.startDate) : null,
+      endDate: item.releaseDate != null ? new Date(item.releaseDate) : null,
     }));
   }
   console.log("Warning! Unknown custom field type for field", field);

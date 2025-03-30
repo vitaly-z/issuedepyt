@@ -21,8 +21,8 @@ import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import { FilterState } from "../../../@types/filter-state";
 import { filterIssues } from "./issue-helpers";
-import { durationToDays, isPastDate } from "./time-utils";
-import { getIssueWork } from "./issue-helpers";
+import { calcBusinessDays, durationToDays, isPastDate } from "./time-utils";
+import { getIssueWork, getIssueStartEnd } from "./issue-helpers";
 
 interface DepTimelineProps {
   issues: { [id: string]: IssueInfo };
@@ -130,8 +130,8 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
   useEffect(() => {
     if (timeline.current && items.current) {
       const visibleIssues = Object.values(filterIssues(filterState, issues))
-        // Only show issues with a due date or start date.
-        .filter((x) => x?.dueDate || x?.startDate);
+        // Only show issues with a start or end date.
+        .filter((issue) => Object.values(getIssueStartEnd(issue)).filter((x) => !!x).length > 0);
       console.log(`Rendering timeline with ${Object.keys(visibleIssues).length} nodes`);
       const stateColors = fieldInfo?.stateField ? fieldInfo.stateField.values : {};
       const stateStyles = Object.fromEntries(
@@ -141,28 +141,21 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
         ])
       );
       const timelineItems: Array<TimelineItem> = visibleIssues.map((issue) => {
-        const isOverdue = !issue.resolved && !!issue.dueDate && isPastDate(issue.dueDate as Date);
-        const warningSign = isOverdue ? "&nbsp;⚠️" : "";
         const startSymbol = "⇤"; // "↦".
         const endSymbol = "⇥";
         const periodSymbol = "↹";
         let typeSymbol = `<b>${periodSymbol}</b>`;
         let className = "period";
-        const timePeriod: {
-          start: Date | undefined;
-          end: Date | undefined;
-          type: TimelineItemType;
-        } = { start: undefined, end: undefined, type: "box" };
-        if (issue.dueDate && issue.startDate) {
-          timePeriod.start = issue.startDate;
-          timePeriod.end = issue.dueDate;
-          timePeriod.type = "range";
-        } else if (issue.dueDate) {
-          timePeriod.start = issue.dueDate;
+        let periodType: TimelineItemType = "box";
+        const timePeriod = getIssueStartEnd(issue);
+        const isOverdue = !issue.resolved && !!timePeriod.end && isPastDate(timePeriod.end as Date);
+        const warningSign = isOverdue ? "&nbsp;⚠️" : "";
+        if (timePeriod.start && timePeriod.end) {
+          periodType = "range";
+        } else if (timePeriod.end) {
           typeSymbol = `<b>${endSymbol}</b>`;
           className = "end";
-        } else if (issue.startDate) {
-          timePeriod.start = issue.startDate;
+        } else if (timePeriod.start) {
           typeSymbol = `<b>${startSymbol}</b>`;
           className = "start";
         }

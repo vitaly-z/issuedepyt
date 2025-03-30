@@ -57,6 +57,31 @@ export const estimationToDays = (estimation: IssuePeriod): number => {
   return 0;
 };
 
+export const getIssueStartEnd = (issue: IssueInfo): { start: Date | null; end: Date | null } => {
+  const period: {
+    start: Date | null;
+    end: Date | null;
+  } = { start: null, end: null };
+
+  if (issue?.sprints && issue.sprints.length > 0) {
+    const startDates = issue.sprints.map((x) => x.startDate).filter((x) => x != null);
+    const endDates = issue.sprints.map((x) => x.endDate).filter((x) => x != null);
+    if (startDates.length > 0) {
+      period.start = startDates.reduce((a, b) => (a < b ? a : b)) as Date;
+    }
+    if (endDates.length > 0) {
+      period.end = endDates.reduce((a, b) => (a > b ? a : b)) as Date;
+    }
+  }
+  if (issue?.startDate) {
+    period.start = issue.startDate;
+  }
+  if (issue?.dueDate) {
+    period.end = issue.dueDate;
+  }
+  return period;
+};
+
 export const getIssueWork = (
   issue: IssueInfo
 ): { estimatedDays?: number; scheduledDays?: number; workFactor?: number } => {
@@ -65,9 +90,8 @@ export const getIssueWork = (
   if (estimatedDays !== 0) {
     workInfo = { estimatedDays, ...workInfo };
   }
-  const startDate = issue.startDate as Date;
-  const dueDate = issue.dueDate as Date;
-  const scheduledDays = startDate && dueDate ? calcBusinessDays(startDate, dueDate) : null;
+  const { start, end } = getIssueStartEnd(issue);
+  const scheduledDays = start && end ? calcBusinessDays(start, end) : null;
   if (scheduledDays) {
     workInfo = { scheduledDays, ...workInfo };
   } else {
