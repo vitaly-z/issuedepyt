@@ -103,6 +103,46 @@ const SearchDropdownMenu: React.FunctionComponent<SearchDropdownMenuProps> = ({
       });
     }
   }
+
+  const allSprints = Object.values(issueData)
+    .flatMap((x) => x?.sprints)
+    .filter((x) => !!x)
+    .map((x) => x.name);
+  const sprints = [...new Set(allSprints)].sort();
+  if (sprints.length > 0) {
+    const submenuItems = [];
+    for (const sprint of sprints) {
+      submenuItems.push({
+        rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+        template: (
+          <Button
+            inline
+            onClick={(e: any) =>
+              setHighlightedNodes(
+                findNodes(
+                  (x: IssueInfo) =>
+                    x?.sprints != undefined &&
+                    x.sprints.filter((s) => s.name === sprint).length > 0,
+                  issueData
+                )
+              )
+            }
+          >
+            Highlight sprint {sprint}
+          </Button>
+        ),
+      });
+    }
+    items.push({
+      rgItemType: DropdownMenu.ListProps.Type.CUSTOM,
+      template: (
+        <button className="nested-menu-button" onClick={(e) => e.stopPropagation()}>
+          <NestedMenuItem title="Sprints" data={submenuItems} />
+        </button>
+      ),
+    });
+  }
+
   const searches: Array<[string, (issue: IssueInfo) => boolean]> = [
     ["Highlight root node", (x: IssueInfo) => x.depth == 0],
     ["Highlight resolved", (x: IssueInfo) => x.resolved],
