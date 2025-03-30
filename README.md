@@ -6,11 +6,11 @@ YouTrack app to visualize issue dependencies. The issue dependencies are visuali
 tree including configured upstream and/or downstream relations. This allows for e.g. visualizing
 *all* upstream issues that an issue depend on including all subtasks and issues depended on.
 
-Optionally the issues visible in the graph that also has a *Due Date* or a *Start Date* set can be
-visualized on a time-line. This helps when for example trying to understand if all upstream issues
-has *Due Dates* aligned with the current issue. It also helps the other way around, i.e. when trying
-to understand if any downstream issue (dependent issue) has a *Due Date* that infers an implicit
-deadline to the current issue.
+Optionally the issues visible in the graph that also has an assigned *sprint*, a *Due Date* or a
+*Start Date* set can be visualized on a time-line. This helps when for example trying to understand
+if all upstream issues has *Due Dates* aligned with the current issue. It also helps the other way
+around, i.e. when trying to understand if any downstream issue (dependent issue) has a *Due Date*
+that infers an implicit deadline to the current issue.
 
 Any custom YouTrack Issue Link Types are also supported.
 
@@ -100,6 +100,11 @@ tickets.
 
 Set to the name of the field in the project representing the issue assignee. The YouTrack default
 name for this field is `Assignee`.
+
+##### Sprints field name
+
+Set to the name of the field in the project representing the issue sprints. The YouTrack default
+name for this field is `Sprints`.
 
 ##### Start Date field name
 
