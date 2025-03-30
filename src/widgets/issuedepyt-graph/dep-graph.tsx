@@ -382,9 +382,9 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
       data.current.nodes.add(nodes);
       data.current.edges.clear();
       data.current.edges.add(edges);
-      updateSelectedNodes(selectedIssueId, highlightedIssueIds);
       // @ts-ignore
       network.current.setData(data.current);
+      updateSelectedNodes(selectedIssueId, highlightedIssueIds);
     }
   }, [issues, fieldInfo, filterState, useDepthRendering]);
 
