@@ -7,7 +7,7 @@
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "version": "1.4.0",
+  "version": "1.4.1",
   "changeNotes": "Version 1.4.1:<br/>- Fix timeline crash when issue only has a start date.",
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
