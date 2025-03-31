@@ -146,16 +146,23 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
         const periodSymbol = "↹";
         let typeSymbol = `<b>${periodSymbol}</b>`;
         let className = "period";
-        let periodType: TimelineItemType = "box";
         const timePeriod = getIssueStartEnd(issue);
         const isOverdue = !issue.resolved && !!timePeriod.end && isPastDate(timePeriod.end as Date);
         const warningSign = isOverdue ? "&nbsp;⚠️" : "";
+        const itemPeriodProps: { start: Date; end?: Date; type: TimelineItemType } = {
+          start: timePeriod.start as Date,
+          type: "range",
+        };
         if (timePeriod.start && timePeriod.end) {
-          periodType = "range";
+          itemPeriodProps.end = timePeriod.end;
         } else if (timePeriod.end) {
+          itemPeriodProps.start = timePeriod.end;
+          itemPeriodProps.type = "box";
           typeSymbol = `<b>${endSymbol}</b>`;
           className = "end";
         } else if (timePeriod.start) {
+          itemPeriodProps.start = timePeriod.start;
+          itemPeriodProps.type = "box";
           typeSymbol = `<b>${startSymbol}</b>`;
           className = "start";
         }
@@ -167,7 +174,7 @@ const DepTimeline: React.FunctionComponent<DepTimelineProps> = ({
           title: getTooltip(issue, isOverdue),
           className,
           style: issue?.state && issue.state in stateStyles ? stateStyles[issue.state] : undefined,
-          ...(timePeriod as { start: DateType; end: DateType | undefined; type: TimelineItemType }),
+          ...itemPeriodProps,
         };
         return item;
       });
