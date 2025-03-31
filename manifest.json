@@ -8,7 +8,7 @@
     "url": "https://github.com/christensson/issuedepyt"
   },
   "version": "1.4.0",
-  "changeNotes": "Version 1.4.0:<br/>- Add setting for sprints field.<br/>- Use sprints to derive start and end dates for timeline.<br/>- Use sprints to show if ticket is planned or unplanned.<br/>- Add search highlight based on sprints.<br/>- Improved select and highlight visibility in node graph.<br/>- Fix calculation of number of working days.<br/>- Fix loss of selection at reload.",
+  "changeNotes": "Version 1.4.1:<br/>- Fix timeline crash when issue only has a start date.",
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
   "widgets": [
