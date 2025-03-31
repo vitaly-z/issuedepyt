@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/youtrack-app.json",
   "name": "issuedepyt",
   "title": "Issue Dependencies",
-  "description": "Visualize issue dependencies in a graph or tree. Dependent issues found can also be visualized in a timeline if sprints, start date and/or due data fields are set.",
+  "description": "Visualize issue dependencies in a graph or tree. Issues with time information can also be visualized on a timeline.",
   "vendor": {
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
