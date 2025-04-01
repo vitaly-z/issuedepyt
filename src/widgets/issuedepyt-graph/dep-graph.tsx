@@ -137,26 +137,30 @@ const getGraphObjects = (
     [
       ...(issue.showUpstream ? issue.upstreamLinks : []),
       ...(issue.showDownstream ? issue.downstreamLinks : []),
-    ].map((link: IssueLink) => ({
-      direction: link.direction,
-      type: link.type,
-      edge: {
-        from: issue.id,
-        to: link.targetId,
-        label:
-          link.direction === "OUTWARD" || link.direction === "BOTH"
-            ? link.sourceToTarget
-            : link.targetToSource,
-        arrows: {
-          from: {
-            enabled: link.direction == "OUTWARD" && link.type == "Subtask",
-          },
-          to: {
-            enabled: link.direction !== "BOTH",
+    ].map((link: IssueLink) => {
+      const label =
+        link.direction === "OUTWARD" || link.direction === "BOTH"
+          ? link.sourceToTarget
+          : link.targetToSource;
+      return {
+        direction: link.direction,
+        type: link.type,
+        edge: {
+          from: issue.id,
+          to: link.targetId,
+          label,
+          title: label,
+          arrows: {
+            from: {
+              enabled: link.direction == "OUTWARD" && link.type == "Subtask",
+            },
+            to: {
+              enabled: link.direction !== "BOTH",
+            },
           },
         },
-      },
-    }))
+      };
+    })
   );
 
   // Filter out duplicate edges.
