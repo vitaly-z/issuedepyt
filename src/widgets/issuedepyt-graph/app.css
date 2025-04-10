@@ -1,4 +1,7 @@
 :root {
+  /* Constants. */
+  --vis-timeline-tree-step: 12px;
+  /* Colors. */
   --yt-palette-0-fg: #444;
   --yt-palette-1-fg: #fff;
   --yt-palette-2-fg: #fff;
@@ -168,6 +171,94 @@ div.vertical-size-control-bar {
   box-shadow: 0 0 6px gray;
 }
 
+/* For some reason level 0 doesn't get vis-nested-group. */
+.vis-label.vis-nesting-group.vis-group-level-0 .vis-inner {
+  padding-left: 0;
+}
+.vis-label.vis-nested-group.vis-group-level-0 .vis-inner {
+  padding-left: 0;
+}
+.vis-label.vis-nested-group.vis-group-level-1 {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.vis-label.vis-nested-group.vis-group-level-1 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 1);
+}
+.vis-label.vis-nested-group.vis-group-level-2 {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.vis-label.vis-nested-group.vis-group-level-2 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 2);
+}
+.vis-label.vis-nested-group.vis-group-level-3 {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.vis-label.vis-nested-group.vis-group-level-3 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 3);
+}
+.vis-label.vis-nested-group.vis-group-level-4 {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.vis-label.vis-nested-group.vis-group-level-4 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 4);
+}
+.vis-label.vis-nested-group.vis-group-level-5 {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+.vis-label.vis-nested-group.vis-group-level-5 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 5);
+}
+.vis-label.vis-nested-group.vis-group-level-6 {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.vis-label.vis-nested-group.vis-group-level-6 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 6);
+}
+.vis-label.vis-nested-group.vis-group-level-7 {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+.vis-label.vis-nested-group.vis-group-level-7.vis-label .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 7);
+}
+.vis-label.vis-nested-group.vis-group-level-8 {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.vis-label.vis-nested-group.vis-group-level-8 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 8);
+}
+.vis-label.vis-nested-group.vis-group-level-9 {
+  background-color: rgba(0, 0, 0, 0.45);
+}
+.vis-label.vis-nested-group.vis-group-level-9 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 9);
+}
+/* default takes over beginning with level-10 (thats why we add .vis-nested-group
+  to the selectors above, to have higher specifity than these rules for the defaults) */
+.vis-label.vis-nested-group {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.vis-label.vis-nested-group .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 10);
+}
+.vis-group-level-unknown-but-gte1 {
+  border: 1px solid red;
+}
+/* expanded/collapsed indicators */
+.vis-label.vis-nesting-group:before,
+.vis-label.vis-nesting-group:before {
+  display: inline-block;
+  width: 15px;
+}
+.vis-label.vis-nesting-group.expanded:before {
+  content: "\25BE" !important;
+}
+.vis-label.vis-nesting-group.collapsed:before {
+  content: "\25B8" !important;
+}
+/* compensate missing expanded/collapsed indicator, but only at levels > 0 */
+.vis-ltr .vis-label:not(.vis-nesting-group):not(.vis-group-level-0) {
+  padding-left: 15px;
+}
 /* Style navigation controls to look OK in dark mode as well. */
 div.vis-timeline {
   background-color: white;
