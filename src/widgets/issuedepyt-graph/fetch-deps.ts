@@ -21,6 +21,7 @@ async function fetchIssueInfo(host: HostAPI, issueID: string): Promise<any> {
       value(name,fullName,startDate,releaseDate,presentation,minutes,text),
       projectCustomField(
         name,
+        field(fieldType(id)),
         bundle(
           values(
             name,
@@ -48,7 +49,11 @@ async function fetchIssueLinks(host: HostAPI, issueID: string): Promise<any> {
       id,idReadable,summary,resolved,isDraft,
       customFields(
         name,
-        value(name,fullName,startDate,releaseDate,presentation,minutes,text)
+        value(name,fullName,startDate,releaseDate,presentation,minutes,text),
+        projectCustomField(
+          name,
+          field(fieldType(id))
+        )
       )
     )`.replace(/\s+/g, "");
 
@@ -83,7 +88,11 @@ const getCustomFieldValue = (
   const type = field.$type;
   const value = field.value;
   if (type === "SimpleIssueCustomField") {
-    return value;
+    if (field.projectCustomField.field.fieldType.id === "date and time") {
+      return new Date(value);
+    } else {
+      return value;
+    }
   }
   if (type === "DateIssueCustomField") {
     return new Date(value);
