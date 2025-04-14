@@ -7,8 +7,8 @@
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "version": "1.5.0",
-  "changeNotes": "Version 1.5.0:<br/>- Group timeline items by downstream parent or other relation.<br/>- Add hover tooltip to relations in node graph.", 
+  "version": "1.5.1",
+  "changeNotes": "Version 1.5.1:<br/>- Support \"date and time\" field type for date fields.", 
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
   "widgets": [
