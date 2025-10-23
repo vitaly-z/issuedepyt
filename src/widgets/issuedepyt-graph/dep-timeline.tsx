@@ -5,7 +5,7 @@ import SearchIcon from "@jetbrains/icons/search";
 import Group from "@jetbrains/ring-ui-built/components/group/group";
 import Tooltip from "@jetbrains/ring-ui-built/components/tooltip/tooltip";
 import Theme from "@jetbrains/ring-ui-built/components/global/theme";
-import { DataSet } from "vis-data/peer/esm/vis-data";
+import { DataSet } from "vis-data/peer/esm/vis-data.mjs";
 import { Timeline } from "vis-timeline";
 import type {
   DateType,
@@ -16,7 +16,7 @@ import type {
   TimelineItem,
   TimelineItemType,
   TimelineOptions,
-} from "vis-timeline/types";
+} from "vis-timeline";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import { FilterState } from "../../../@types/filter-state";

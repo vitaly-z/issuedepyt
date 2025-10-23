@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { DataSet } from "vis-data/peer/esm/vis-data";
-import { Network } from "vis-network/standalone/esm/vis-network";
+import { DataSet } from "vis-data/peer/esm/vis-data.mjs";
+import { Network } from "vis-network/peer/esm/vis-network.mjs";
 import type { IssueInfo, IssueLink } from "./issue-types";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import type { FilterState } from "../../../@types/filter-state";
