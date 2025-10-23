@@ -7,7 +7,7 @@
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/issuedepyt"
   },
-  "version": "1.5.1",
+  "version": "1.5.2",
   "changeNotes": "Version 1.5.1:<br/>- Support \"date and time\" field type for date fields.", 
   "icon": "issuedepyt-icon.svg",
   "minYouTrackVersion": "2024.3.0",
