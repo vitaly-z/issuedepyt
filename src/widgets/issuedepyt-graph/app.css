@@ -95,6 +95,11 @@
   margin: calc(var(--ring-unit) / 2);
 }
 
+div.dep-page-current-issue {
+  justify-content: left;
+  width: 100%;
+  margin-bottom: calc(var(--ring-unit) / 2);
+}
 div.dep-toolbar {
   display: flex;
   justify-content: space-between;

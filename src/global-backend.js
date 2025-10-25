@@ -4,19 +4,39 @@ exports.httpHandler = {
   endpoints: [
     {
       method: "GET",
-      path: "settings",
-      scope: "issue", // For unkown reasons ctx.settings isn't populated for the "global" scope.
+      path: "context",
+      scope: "global",
+      permissions: ["READ_ISSUE", "READ_PROJECT"],
       handle: function handle(ctx) {
-        ctx.response.json({ settings: ctx.settings });
+        const issueId = ctx.globalStorage.extensionProperties.issueId;
+        const props = ctx.globalStorage.extensionProperties;
+        const settings = {
+          // Load project settings from stored context.
+          typeField: props.typeField,
+          stateField:  props.stateField,
+          sprintsField: props.sprintsField,
+          assigneeField: props.assigneeField,
+          startDateField: props.startDateField,
+          dueDateField: props.dueDateField,
+          estimationField: props.estimationField,
+          extraCustomFields: props.extraCustomFields,
+          upstreamRelations: props.upstreamRelations,
+          downstreamRelations: props.downstreamRelations,
+          // Global settings are available in ctx.settings.
+          autoLoadDeps: ctx.settings.autoLoadDeps,
+          useHierarchicalLayout: ctx.settings.useHierarchicalLayout,
+          maxRecursionDepth: ctx.settings.maxRecursionDepth,
+        }
+        ctx.response.json({ issueId: issueId, settings: settings });
       },
     },
     {
       method: "POST",
       path: "storeContext",
-      scope: "issue", // For unkown reasons ctx.settings isn't populated for the "global" scope.
+      scope: "global",
       handle: function handle(ctx) {
         const body = JSON.parse(ctx.request.body);
-        const settings = ctx.settings;
+        const settings = body.settings;
         ctx.globalStorage.extensionProperties.issueId = body.issueId;
         ctx.globalStorage.extensionProperties.typeField = settings.typeField;
         ctx.globalStorage.extensionProperties.stateField = settings.stateField;
@@ -28,7 +48,7 @@ exports.httpHandler = {
         ctx.globalStorage.extensionProperties.extraCustomFields = settings.extraCustomFields;
         ctx.globalStorage.extensionProperties.upstreamRelations = settings.upstreamRelations;
         ctx.globalStorage.extensionProperties.downstreamRelations = settings.downstreamRelations;
-        ctx.response.json({issueId: body.issueId });
+        ctx.response.json({ issueId: body.issueId });
       },
     },
   ],

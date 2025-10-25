@@ -45,7 +45,7 @@ type YTAppInterface = {
   locale: string;
   entity: {
     id: string;
-    type: "ticket";
+    type: string;
   };
   register: (appApi?: AppAPI) => Promise<HostAPI>;
 };

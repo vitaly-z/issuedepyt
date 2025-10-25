@@ -1,16 +1,22 @@
 import React, { memo, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import { Grid, Row, Col } from "@jetbrains/ring-ui-built/components/grid/grid";
+import Text from "@jetbrains/ring-ui-built/components/text/text";
 import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { host } from "../global/ytApp";
 import type { Settings } from "../../../@types/settings";
-import type { IssueInfo, IssueLink, Relation, Relations, DirectionType } from "./issue-types";
-import IssueDeps from "./issue-deps";
-
-const issue = YTApp.entity;
+import type {
+  IssueInfo,
+  IssueLink,
+  Relation,
+  Relations,
+  DirectionType,
+} from "../issuedepyt-graph/issue-types";
+import IssueDeps from "../issuedepyt-graph/issue-deps";
 
 const AppComponent: React.FunctionComponent = () => {
+  const [issueId, setIssueId] = useState<string | null>("SAN-3");
   const [settings, setSettings] = useState<Settings>({});
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
   const [followUpstream, setFollowUpstream] = useState<boolean>(true);
@@ -21,28 +27,23 @@ const AppComponent: React.FunctionComponent = () => {
       console.log("Auto loading deps: Showing graph.");
       setGraphVisible(true);
     }
-  }, [graphVisible, settings]);
+  }, [graphVisible, settings, issueId]);
 
   useEffect(() => {
-    host.fetchApp<{ settings: Settings }>("backend/settings", { scope: true }).then((resp) => {
-      const newSettings = resp.settings;
-      console.log("Got settings", newSettings);
-      setSettings(newSettings);
-    });
-  }, [host]);
-
-  const openGraphPage = async () => {
-    // Update backend context and transfer to app page.
+    console.log("Fetching context...");
     host
-      .fetchApp<void>("backend/storeContext", {
-        scope: true,
-        method: "POST",
-        body: { issueId: issue.id, settings: settings },
-      })
+      .fetchApp<{ issueId: string; settings: Settings }>("global-backend/context", { scope: false })
       .then((resp) => {
-        open("/app/issuedepyt/page");
+        const newSettings = resp.settings;
+        console.log("Got settings", newSettings);
+        setSettings(newSettings);
+        console.log("Context issue ID: ", resp.issueId);
+        if (resp.issueId) {
+          setIssueId(resp.issueId);
+          setGraphVisible(true);
+        }
       });
-  };
+  }, [host]);
 
   return (
     <div className="widget">
@@ -52,9 +53,6 @@ const AppComponent: React.FunctionComponent = () => {
             <Row start={"xs"} middle={"xs"}>
               <Col>
                 <Button onClick={() => setGraphVisible((value) => !value)}>Load graph...</Button>
-              </Col>
-              <Col>
-                <Button onClick={() => openGraphPage()}>Open in app...</Button>
               </Col>
               <Col>
                 <Grid>
@@ -82,15 +80,20 @@ const AppComponent: React.FunctionComponent = () => {
           </Grid>
         </div>
       )}
-      {graphVisible && (
-        <IssueDeps
-          issueId={issue.id}
-          settings={settings}
-          followUpstream={followUpstream}
-          followDownstream={followDownstream}
-          setFollowUpstream={setFollowUpstream}
-          setFollowDownstream={setFollowDownstream}
-        />
+      {graphVisible && issueId && (
+        <div>
+          <div className="dep-page-current-issue">
+            <Text size={Text.Size.M}>{issueId} dependencies</Text>
+          </div>
+          <IssueDeps
+            issueId={issueId}
+            settings={settings}
+            followUpstream={followUpstream}
+            followDownstream={followDownstream}
+            setFollowUpstream={setFollowUpstream}
+            setFollowDownstream={setFollowDownstream}
+          />
+        </div>
       )}
     </div>
   );
