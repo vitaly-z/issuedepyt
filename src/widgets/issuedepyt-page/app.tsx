@@ -7,9 +7,14 @@ import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/t
 import { host } from "../global/ytApp";
 import type { Settings } from "../../../@types/settings";
 import IssueDeps from "../depgraph/issue-deps";
+import Link from "@jetbrains/ring-ui-built/components/link/link";
+
+const entity = YTApp.entity;
 
 const AppComponent: React.FunctionComponent = () => {
-  const [issueId, setIssueId] = useState<string | null>("SAN-3");
+  const [issueId, setIssueId] = useState<string | null>(
+    entity?.type === "issue" ? entity.id : null
+  );
   const [settings, setSettings] = useState<Settings>({});
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
   const [followUpstream, setFollowUpstream] = useState<boolean>(true);
@@ -26,6 +31,18 @@ const AppComponent: React.FunctionComponent = () => {
 
   useEffect(() => {
     console.log("Fetching context...");
+    if (entity?.type === "issue") {
+      host.fetchApp<{ settings: Settings }>("backend/settings", { scope: true }).then((resp) => {
+        const newSettings = resp.settings;
+        console.log("Got settings", newSettings);
+        setSettings(newSettings);
+        setIssueId(entity.id);
+        setGraphVisible(true);
+      });
+      return;
+    }
+
+    // Not opened on an issue, fetch context to find the issue ID.
     host
       .fetchApp<{ issueId: string; settings: Settings }>("global-backend/context", { scope: false })
       .then((resp) => {
@@ -42,43 +59,19 @@ const AppComponent: React.FunctionComponent = () => {
 
   return (
     <div className="full-page-widget">
-      {!graphVisible && (
+      {(!graphVisible || !issueId) && (
         <div>
-          <Grid>
-            <Row start={"xs"} middle={"xs"}>
-              <Col>
-                <Button onClick={() => setGraphVisible((value) => !value)}>Load graph...</Button>
-              </Col>
-              <Col>
-                <Grid>
-                  <Row start={"xs"} middle={"xs"}>
-                    <Toggle
-                      size={ToggleSize.Size14}
-                      checked={followUpstream}
-                      onChange={(e: any) => setFollowUpstream(e.target.checked)}
-                    >
-                      Follow upstream (find issues that this issue depends on).
-                    </Toggle>
-                  </Row>
-                  <Row start={"xs"} middle={"xs"}>
-                    <Toggle
-                      size={ToggleSize.Size14}
-                      checked={followDownstream}
-                      onChange={(e: any) => setFollowDownstream(e.target.checked)}
-                    >
-                      Follow downstream (find issues that depends on this issue).
-                    </Toggle>
-                  </Row>
-                </Grid>
-              </Col>
-            </Row>
-          </Grid>
+          <Text size={Text.Size.M}>
+            No issue in context, open issue dependencies from an issue to get the context.
+          </Text>
         </div>
       )}
       {graphVisible && issueId && (
         <div>
           <div className="dep-page-current-issue">
-            <Text size={Text.Size.M}>{issueId} dependencies</Text>
+            <Text size={Text.Size.M}>
+              <Link href={`/issue/${issueId}`}>{issueId}</Link> dependencies
+            </Text>
           </div>
           <IssueDeps
             issueId={issueId}
