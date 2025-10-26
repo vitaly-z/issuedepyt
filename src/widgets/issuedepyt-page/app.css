@@ -1,0 +1,27 @@
+.full-page-widget {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ring-unit) * 2);
+  margin: calc(var(--ring-unit) * 2);
+}
+
+div.dep-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  justify-content: left;
+  margin-bottom: var(--ring-unit);
+}
+
+span.dep-page-header-right {
+  margin-left: auto;
+}
+
+div.open-issue-search {
+  margin-bottom: var(--ring-unit);
+}
+
+div.open-issue-list {
+  max-height: 300px;
+  overflow-y: auto;
+}

@@ -50,7 +50,7 @@ export default defineConfig({
       input: {
         // List every widget entry point here
         issuedepytGraph: resolve(__dirname, 'src/widgets/issuedepyt-graph/index.html'),
-
+        issuedepytPage: resolve(__dirname, 'src/widgets/issuedepyt-page/index.html'),
       }
     }
   }

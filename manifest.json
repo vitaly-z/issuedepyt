@@ -17,8 +17,14 @@
       "name": "Issue dependencies",
       "indexPath": "issuedepyt-graph/index.html",
       "extensionPoint": "ISSUE_ABOVE_ACTIVITY_STREAM",
-      "iconPath": "issuedepyt-graph/widget-icon.svg",
       "description": "Visualize issue dependencies.",
+      "permissions": ["READ_ISSUE"]
+    },
+    {
+      "key": "page",
+      "name": "Issue Dependencies",
+      "indexPath": "issuedepyt-page/index.html",
+      "extensionPoint": "MAIN_MENU_ITEM",
       "permissions": ["READ_ISSUE"]
     }
   ]

@@ -1,6 +1,6 @@
-import { IssueInfo, IssueLink, IssuePeriod } from "./issue-types";
+import { IssueInfo, IssueLink, IssuePeriod } from "./issue-types.ts";
 import { FilterState } from "../../../@types/filter-state";
-import { calcBusinessDays } from "./time-utils";
+import { calcBusinessDays } from "./time-utils.ts";
 
 export const filterIssues = (filter: FilterState, issues: Record<string, IssueInfo>) => {
   const filteredIssues = Object.fromEntries(

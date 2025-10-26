@@ -8,7 +8,6 @@ import { filterIssues } from "./issue-helpers";
 import { ColorPaletteItem, Color, hexToRgb, rgbToHex } from "./colors";
 
 interface DepGraphProps {
-  height: string;
   issues: { [id: string]: IssueInfo };
   selectedIssueId: string | null;
   highlightedIssueIds: string[] | null;
@@ -231,7 +230,6 @@ const getGraphObjects = (
 };
 
 const DepGraph: React.FunctionComponent<DepGraphProps> = ({
-  height,
   issues,
   selectedIssueId,
   highlightedIssueIds,
@@ -407,7 +405,7 @@ const DepGraph: React.FunctionComponent<DepGraphProps> = ({
     updateSelectedNodes(selectedIssueId, highlightedIssueIds);
   }, [selectedIssueId, highlightedIssueIds]);
 
-  return <div ref={containerRef} className="dep-graph" style={{ height }} />;
+  return <div ref={containerRef} className="dep-graph" />;
 };
 
 export default DepGraph;

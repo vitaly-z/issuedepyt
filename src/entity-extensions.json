@@ -1,0 +1,53 @@
+{
+  "entityTypeExtensions": [
+    {
+      "entityType": "User",
+      "properties": {
+        "issueId": {
+          "type": "string",
+          "multi": false
+        },
+        "typeField": {
+          "type": "string",
+          "multi": false
+        },
+        "stateField": {
+          "type": "string",
+          "multi": false
+        },
+        "sprintsField": {
+          "type": "string",
+          "multi": false
+        },
+        "assigneeField": {
+          "type": "string",
+          "multi": false
+        },
+        "startDateField": {
+          "type": "string",
+          "multi": false
+        },
+        "dueDateField": {
+          "type": "string",
+          "multi": false
+        },
+        "estimationField": {
+          "type": "string",
+          "multi": false
+        },
+        "extraCustomFields": {
+          "type": "string",
+          "multi": false
+        },
+        "upstreamRelations": {
+          "type": "string",
+          "multi": false
+        },
+        "downstreamRelations": {
+          "type": "string",
+          "multi": false
+        }
+      }
+    }
+  ]
+}

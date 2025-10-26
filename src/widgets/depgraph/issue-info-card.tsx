@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { IssueInfo, IssueLink, IssuePeriod } from "./issue-types";
+import type { IssueInfo, IssueLink, IssuePeriod } from "./issue-types.ts";
 import Island, { Header, Content } from "@jetbrains/ring-ui-built/components/island/island";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
