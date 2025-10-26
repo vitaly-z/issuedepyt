@@ -1,4 +1,4 @@
-.widget {
+.full-page-widget {
   display: flex;
   flex-direction: column;
   gap: calc(var(--ring-unit) * 2);

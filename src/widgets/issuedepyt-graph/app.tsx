@@ -81,7 +81,7 @@ const AppComponent: React.FunctionComponent = () => {
           followDownstream={followDownstream}
           setFollowUpstream={setFollowUpstream}
           setFollowDownstream={setFollowDownstream}
-          isSinglePageApp={true}
+          useDynamicGraphHeight={true}
         />
       )}
     </div>

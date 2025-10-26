@@ -1,4 +1,7 @@
 :root {
+  --window-height: 1080px;
+  --graph-height: calc(var(--window-height) - 280px);
+
   /* Constants. */
   --vis-timeline-tree-step: 12px;
   /* Colors. */
@@ -281,6 +284,7 @@ div.dep-timeline-controls {
 div.dep-graph {
   margin-top: calc(var(--ring-unit) / 2);
   margin-bottom: calc(var(--ring-unit) / 2);
+  height: var(--graph-height);
 }
 
 /* Style navigation controls to look OK in dark mode as well. */

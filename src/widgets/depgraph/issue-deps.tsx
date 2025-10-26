@@ -38,6 +38,7 @@ interface IssueDepsProps {
   setFollowUpstream: (value: boolean) => void;
   setFollowDownstream: (value: boolean) => void;
   isSinglePageApp?: boolean;
+  useDynamicGraphHeight?: boolean;
 }
 
 const DEFAULT_MAX_DEPTH = 6;
@@ -117,6 +118,7 @@ const getRelations = (settings: Settings): Relations | null => {
   const downstream = parseRelationList(settings?.downstreamRelations);
   return { upstream, downstream };
 };
+
 const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
   issueId,
   settings,
@@ -125,6 +127,7 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
   setFollowUpstream,
   setFollowDownstream,
   isSinglePageApp = false,
+  useDynamicGraphHeight = false,
 }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [relations, setRelations] = useState<Relations>({
@@ -132,8 +135,8 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
     downstream: [],
   });
   const [timelineVisible, setTimelineVisible] = useState<boolean>(false);
-  const [graphHeight, setGraphHeight] = useState<number>(400);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [graphHeight, setGraphHeight] = useState<number>(400);
   const [highlightedNodes, setHighlightedNodes] = useState<Array<string> | null>(null);
   const [maxNodeWidth, setMaxNodeWidth] = useState<number>(DEFAULT_MAX_NODE_WIDTH);
   const [maxDepth, setMaxDepth] = useState<number>(DEFAULT_MAX_DEPTH);
@@ -151,6 +154,12 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
   const selectNode = (nodeId: string) => {
     setHighlightedNodes(null);
     setSelectedNode(nodeId);
+  };
+
+  const activateGraphHeight = (height: number) => {
+    setGraphHeight(height);
+    const actualHeight = height + 280;
+    document.documentElement.style.setProperty("--window-height", `${actualHeight}px`);
   };
 
   const refreshData = async () => {
@@ -171,7 +180,10 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
     const issues = await fetchDeps(host, issueInfo, maxDepth, relations, followDirs, settings);
     setFilterState(createFilterState(fieldInfoData));
     setFieldInfo(fieldInfoData);
-    setGraphHeight(calcGraphSizeFromIssues(issues));
+    if (useDynamicGraphHeight) {
+      const height = calcGraphSizeFromIssues(issues);
+      activateGraphHeight(height);
+    }
     setIssueData(issues);
     // Remove highlight.
     setHighlightedNodes(null);
@@ -347,7 +359,7 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
               filterState={filterState}
               setFilterState={setFilterState}
             />
-            {isSinglePageApp && (
+            {!isSinglePageApp && (
               <Tooltip title="Open graph in full-screen page..." theme={Theme.LIGHT}>
                 <Button onClick={() => openGraphPage(issueId, settings)} icon={ExpandAllIcon} />
               </Tooltip>
@@ -383,7 +395,6 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
       )}
       {Object.keys(issueData).length > 0 && (
         <DepGraph
-          height={`${graphHeight}px`}
           issues={issueData}
           selectedIssueId={selectedNode}
           highlightedIssueIds={highlightedNodes}
@@ -397,15 +408,19 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
         />
       )}
       {selectedNode !== null && isSelectedNodeAnIssue(selectedNode) && (
-        <IssueInfoCard issue={issueData[selectedNode]} />
+        <IssueInfoCard
+          issue={issueData[selectedNode]}
+        />
       )}
-      <VerticalSizeControl
-        minValue={100}
-        maxValue={1000}
-        value={graphHeight}
-        increment={100}
-        onChange={setGraphHeight}
-      />
+      {!isSinglePageApp && (
+        <VerticalSizeControl
+          minValue={100}
+          maxValue={1400}
+          value={graphHeight}
+          increment={100}
+          onChange={activateGraphHeight}
+        />
+      )}
     </div>
   );
 };

@@ -6,13 +6,6 @@ import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { host } from "../global/ytApp";
 import type { Settings } from "../../../@types/settings";
-import type {
-  IssueInfo,
-  IssueLink,
-  Relation,
-  Relations,
-  DirectionType,
-} from "../depgraph/issue-types";
 import IssueDeps from "../depgraph/issue-deps";
 
 const AppComponent: React.FunctionComponent = () => {
@@ -22,12 +15,14 @@ const AppComponent: React.FunctionComponent = () => {
   const [followUpstream, setFollowUpstream] = useState<boolean>(true);
   const [followDownstream, setFollowDownstream] = useState<boolean>(false);
 
-  useMemo(() => {
-    if (!graphVisible && settings?.autoLoadDeps) {
-      console.log("Auto loading deps: Showing graph.");
-      setGraphVisible(true);
-    }
-  }, [graphVisible, settings, issueId]);
+  useEffect(() => {
+    window.onresize = () => {
+      document.documentElement.style.setProperty(
+        "--window-height",
+        window.outerHeight.toString() + "px"
+      );
+    };
+  }, []);
 
   useEffect(() => {
     console.log("Fetching context...");
@@ -46,7 +41,7 @@ const AppComponent: React.FunctionComponent = () => {
   }, [host]);
 
   return (
-    <div className="widget">
+    <div className="full-page-widget">
       {!graphVisible && (
         <div>
           <Grid>
@@ -92,6 +87,7 @@ const AppComponent: React.FunctionComponent = () => {
             followDownstream={followDownstream}
             setFollowUpstream={setFollowUpstream}
             setFollowDownstream={setFollowDownstream}
+            isSinglePageApp={true}
           />
         </div>
       )}
