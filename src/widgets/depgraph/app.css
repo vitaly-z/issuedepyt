@@ -1,0 +1,333 @@
+:root {
+  /* Constants. */
+  --vis-timeline-tree-step: 12px;
+  /* Colors. */
+  --yt-palette-0-fg: #444;
+  --yt-palette-1-fg: #fff;
+  --yt-palette-2-fg: #fff;
+  --yt-palette-3-fg: #fff;
+  --yt-palette-4-fg: #fff;
+  --yt-palette-5-fg: #fff;
+  --yt-palette-6-fg: #fff;
+  --yt-palette-7-fg: #fff;
+  --yt-palette-8-fg: #fff;
+  --yt-palette-9-fg: #fff;
+  --yt-palette-10-fg: #fff;
+  --yt-palette-11-fg: #fff;
+  --yt-palette-12-fg: #fff;
+  --yt-palette-13-fg: #444;
+  --yt-palette-14-fg: #444;
+  --yt-palette-15-fg: #45818e;
+  --yt-palette-16-fg: #888;
+  --yt-palette-17-fg: #4da400;
+  --yt-palette-18-fg: #b45f06;
+  --yt-palette-19-fg: #444;
+  --yt-palette-20-fg: #fff;
+  --yt-palette-21-fg: #3d85c6;
+  --yt-palette-22-fg: #dc5766;
+  --yt-palette-23-fg: #b45f06;
+  --yt-palette-24-fg: #444;
+  --yt-palette-25-fg: #444;
+  --yt-palette-26-fg: #444;
+  --yt-palette-27-fg: #444;
+  --yt-palette-28-fg: #fff;
+  --yt-palette-29-fg: #fff;
+  --yt-palette-30-fg: #fff;
+  --yt-palette-31-fg: #fff;
+  --yt-palette-32-fg: #fff;
+  --yt-palette-33-fg: #fff;
+  --yt-palette-34-fg: #fff;
+  --yt-palette-35-fg: #fff;
+  --yt-palette-0-bg: #fff;
+  --yt-palette-1-bg: #8d5100;
+  --yt-palette-2-bg: #ce6700;
+  --yt-palette-3-bg: #409600;
+  --yt-palette-4-bg: #0070e4;
+  --yt-palette-5-bg: #900052;
+  --yt-palette-6-bg: #0050a1;
+  --yt-palette-7-bg: #2f9890;
+  --yt-palette-8-bg: #8e1600;
+  --yt-palette-9-bg: #dc0083;
+  --yt-palette-10-bg: #7dbd36;
+  --yt-palette-11-bg: #ff7123;
+  --yt-palette-12-bg: #ff7bc3;
+  --yt-palette-13-bg: #fed74a;
+  --yt-palette-14-bg: #b7e281;
+  --yt-palette-15-bg: #d8f7f3;
+  --yt-palette-16-bg: #e6e6e6;
+  --yt-palette-17-bg: #e6f6cf;
+  --yt-palette-18-bg: #ffee9c;
+  --yt-palette-19-bg: #ffc8ea;
+  --yt-palette-20-bg: #e30000;
+  --yt-palette-21-bg: #e0f1fb;
+  --yt-palette-22-bg: #fce5f1;
+  --yt-palette-23-bg: #f7e9c1;
+  --yt-palette-24-bg: #92e1d5;
+  --yt-palette-25-bg: #a6e0fc;
+  --yt-palette-26-bg: #e0c378;
+  --yt-palette-27-bg: #bababa;
+  --yt-palette-28-bg: #25beb2;
+  --yt-palette-29-bg: #42a3df;
+  --yt-palette-30-bg: #878787;
+  --yt-palette-31-bg: #4d4d4d;
+  --yt-palette-32-bg: #246512;
+  --yt-palette-33-bg: #00665e;
+  --yt-palette-34-bg: #553000;
+  --yt-palette-35-bg: #1a1a1a;
+}
+
+.extra-margin-left {
+  margin-left: calc(var(--ring-unit));
+}
+
+.extra-margin-right {
+  margin-right: calc(var(--ring-unit));
+}
+
+.settings {
+  margin: calc(var(--ring-unit) / 2);
+}
+
+div.dep-page-current-issue {
+  justify-content: left;
+  width: 100%;
+  margin-bottom: calc(var(--ring-unit) / 2);
+}
+div.dep-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  justify-content: left;
+  width: 100%;
+}
+
+span.dep-toolbar-right {
+  margin-left: auto;
+}
+
+.nested-menu-item {
+  display: flex;
+  width: 100%;
+}
+.nested-menu-title {
+  flex-grow: 1;
+}
+.nested-menu-button {
+  all: unset;
+  display: flex;
+  width: 100%;
+}
+.nested-menu-button > * {
+  width: 100%;
+}
+
+div.vertical-size-control-bar {
+  margin-top: calc(var(--ring-unit) / 2);
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--ring-unit));
+}
+
+.vis-time-axis .vis-grid.vis-odd {
+  background: #edf3ff; /* --ring-hover-background-color */
+}
+
+.vis-item {
+  border-color: #6c707e !important; /* --ring-secondary-color */
+}
+.vis-item .vis-item-overflow {
+  overflow: visible !important;
+}
+.vis-item.period {
+  border-left-width: 4px;
+  border-right-width: 4px;
+}
+.vis-item.start {
+  border-left-width: 4px;
+}
+.vis-item.end {
+  border-right-width: 4px;
+}
+
+.vis-item.period-overdue {
+  box-shadow: 0 0 4px #a46704;
+  border-left-width: 4px;
+  border-right-width: 4px;
+}
+
+.vis-item.start-overdue {
+  border-left-width: 4px;
+  box-shadow: 0 0 4px #a46704;
+}
+.vis-item.end-overdue {
+  border-right-width: 4px;
+  box-shadow: 0 0 4px #a46704;
+}
+
+.vis-item.vis-selected {
+  border-color: #27282e !important; /* --ring-text-color */
+  box-shadow: 0 0 6px gray;
+}
+
+/* For some reason level 0 doesn't get vis-nested-group. */
+.vis-label.vis-nesting-group.vis-group-level-0 .vis-inner {
+  padding-left: 0;
+}
+.vis-label.vis-nested-group.vis-group-level-0 .vis-inner {
+  padding-left: 0;
+}
+.vis-label.vis-nested-group.vis-group-level-1 {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.vis-label.vis-nested-group.vis-group-level-1 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 1);
+}
+.vis-label.vis-nested-group.vis-group-level-2 {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.vis-label.vis-nested-group.vis-group-level-2 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 2);
+}
+.vis-label.vis-nested-group.vis-group-level-3 {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.vis-label.vis-nested-group.vis-group-level-3 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 3);
+}
+.vis-label.vis-nested-group.vis-group-level-4 {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.vis-label.vis-nested-group.vis-group-level-4 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 4);
+}
+.vis-label.vis-nested-group.vis-group-level-5 {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+.vis-label.vis-nested-group.vis-group-level-5 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 5);
+}
+.vis-label.vis-nested-group.vis-group-level-6 {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.vis-label.vis-nested-group.vis-group-level-6 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 6);
+}
+.vis-label.vis-nested-group.vis-group-level-7 {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+.vis-label.vis-nested-group.vis-group-level-7.vis-label .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 7);
+}
+.vis-label.vis-nested-group.vis-group-level-8 {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.vis-label.vis-nested-group.vis-group-level-8 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 8);
+}
+.vis-label.vis-nested-group.vis-group-level-9 {
+  background-color: rgba(0, 0, 0, 0.45);
+}
+.vis-label.vis-nested-group.vis-group-level-9 .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 9);
+}
+/* default takes over beginning with level-10 (thats why we add .vis-nested-group
+  to the selectors above, to have higher specifity than these rules for the defaults) */
+.vis-label.vis-nested-group {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.vis-label.vis-nested-group .vis-inner {
+  padding-left: calc(var(--vis-timeline-tree-step) * 10);
+}
+.vis-group-level-unknown-but-gte1 {
+  border: 1px solid red;
+}
+/* expanded/collapsed indicators */
+.vis-label.vis-nesting-group:before,
+.vis-label.vis-nesting-group:before {
+  display: inline-block;
+  width: 15px;
+}
+.vis-label.vis-nesting-group.expanded:before {
+  content: "\25BE" !important;
+}
+.vis-label.vis-nesting-group.collapsed:before {
+  content: "\25B8" !important;
+}
+/* compensate missing expanded/collapsed indicator, but only at levels > 0 */
+.vis-ltr .vis-label:not(.vis-nesting-group):not(.vis-group-level-0) {
+  padding-left: 15px;
+}
+/* Style navigation controls to look OK in dark mode as well. */
+div.vis-timeline {
+  background-color: white;
+  border-radius: var(--ring-border-radius);
+  border: 1px solid var(--ring-borders-color);
+}
+
+div.dep-timeline {
+  position: relative;
+  margin-top: calc(var(--ring-unit) / 2);
+  margin-bottom: calc(var(--ring-unit) / 2);
+}
+
+div.dep-timeline-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+  z-index: 9999;
+}
+
+div.dep-graph {
+  margin-top: calc(var(--ring-unit) / 2);
+  margin-bottom: calc(var(--ring-unit) / 2);
+}
+
+/* Style navigation controls to look OK in dark mode as well. */
+div.vis-network {
+  background-color: white;
+  border-radius: var(--ring-border-radius);
+  border: 1px solid var(--ring-borders-color);
+}
+
+div.vis-network div.vis-navigation div.vis-button.vis-up,
+div.vis-network div.vis-navigation div.vis-button.vis-down,
+div.vis-network div.vis-navigation div.vis-button.vis-left,
+div.vis-network div.vis-navigation div.vis-button.vis-right,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomIn,
+div.vis-network div.vis-navigation div.vis-button.vis-zoomOut {
+  background-position: 7px 7px !important;
+}
+div.vis-network div.vis-navigation div.vis-button.vis-zoomExtends {
+  background-position: 9px 9px !important;
+}
+div.vis-network div.vis-navigation div.vis-button {
+  box-shadow: 0 0 3px 3px var(--ring-borders-color) !important;
+}
+
+div.vis-network div.vis-navigation div.vis-button:hover {
+  box-shadow: 0 0 1px 3px var(--ring-border-hover-color) !important;
+}
+
+.vis-button.vis-up {
+  background-image: url('./icons/arrow-20px-up.svg') !important;
+}
+.vis-button.vis-down {
+  background-image: url('./icons/arrow-20px-down.svg') !important;
+}
+.vis-button.vis-left {
+  background-image: url('./icons/arrow-20px-left.svg') !important;
+}
+.vis-button.vis-right {
+  background-image: url('./icons/arrow-20px-right.svg') !important;
+}
+.vis-button.vis-zoomIn {
+  background-image: url('./icons/add-20px.svg') !important;
+}
+.vis-button.vis-zoomOut {
+  background-image: url('./icons/remove-20px.svg') !important;
+}
+.vis-button.vis-zoomExtends {
+  background-position: 10px 10px !important;
+  background-image: url('./icons/fullscreen.svg') !important;
+}
