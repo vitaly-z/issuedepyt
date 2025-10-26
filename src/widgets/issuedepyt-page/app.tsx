@@ -2,12 +2,11 @@ import React, { memo, useMemo, useState, useEffect } from "react";
 import Button from "@jetbrains/ring-ui-built/components/button/button";
 import { Grid, Row, Col } from "@jetbrains/ring-ui-built/components/grid/grid";
 import Text from "@jetbrains/ring-ui-built/components/text/text";
-import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
-import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { host } from "../global/ytApp";
 import type { Settings } from "../../../@types/settings";
 import IssueDeps from "../depgraph/issue-deps";
 import Link from "@jetbrains/ring-ui-built/components/link/link";
+import OpenIssueDialog from "./open-issue-dialog";
 
 const entity = YTApp.entity;
 
@@ -19,6 +18,7 @@ const AppComponent: React.FunctionComponent = () => {
   const [graphVisible, setGraphVisible] = useState<boolean>(false);
   const [followUpstream, setFollowUpstream] = useState<boolean>(true);
   const [followDownstream, setFollowDownstream] = useState<boolean>(false);
+  const [openIssueVisible, setOpenIssueVisible] = useState<boolean>(false);
 
   useEffect(() => {
     window.onresize = () => {
@@ -59,6 +59,16 @@ const AppComponent: React.FunctionComponent = () => {
 
   return (
     <div className="full-page-widget">
+      {openIssueVisible && (
+        <OpenIssueDialog
+          onClose={() => setOpenIssueVisible(false)}
+          onSelect={(selectedIssueId) => {
+            setIssueId(selectedIssueId);
+            setOpenIssueVisible(false);
+            setGraphVisible(true);
+          }}
+        />
+      )}
       {(!graphVisible || !issueId) && (
         <div>
           <Text size={Text.Size.M}>
@@ -68,10 +78,13 @@ const AppComponent: React.FunctionComponent = () => {
       )}
       {graphVisible && issueId && (
         <div>
-          <div className="dep-page-current-issue">
+          <div className="dep-page-header">
             <Text size={Text.Size.M}>
               <Link href={`/issue/${issueId}`}>{issueId}</Link> dependencies
             </Text>
+            <span className="dep-page-header-right">
+              <Button onClick={() => setOpenIssueVisible(true)}>Open other issue</Button>
+            </span>
           </div>
           <IssueDeps
             issueId={issueId}
