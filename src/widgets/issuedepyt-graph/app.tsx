@@ -5,8 +5,8 @@ import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { host } from "../global/ytApp";
 import type { Settings } from "../../../@types/settings";
-import type { IssueInfo, IssueLink, Relation, Relations, DirectionType } from "./issue-types";
 import IssueDeps from "./issue-deps";
+import { openGraphPage } from "../issuedepyt-page/open-page";
 
 const issue = YTApp.entity;
 
@@ -31,30 +31,14 @@ const AppComponent: React.FunctionComponent = () => {
     });
   }, [host]);
 
-  const openGraphPage = async () => {
-    // Update backend context and transfer to app page.
-    host
-      .fetchApp<void>("backend/storeContext", {
-        scope: true,
-        method: "POST",
-        body: { issueId: issue.id, settings: settings },
-      })
-      .then((resp) => {
-        open("/app/issuedepyt/page");
-      });
-  };
-
   return (
     <div className="widget">
-      {!graphVisible && (
+      {!graphVisible && settings && (
         <div>
           <Grid>
             <Row start={"xs"} middle={"xs"}>
               <Col>
                 <Button onClick={() => setGraphVisible((value) => !value)}>Load graph...</Button>
-              </Col>
-              <Col>
-                <Button onClick={() => openGraphPage()}>Open in app...</Button>
               </Col>
               <Col>
                 <Grid>
@@ -79,6 +63,13 @@ const AppComponent: React.FunctionComponent = () => {
                 </Grid>
               </Col>
             </Row>
+            <Row start={"xs"} middle={"xs"}>
+              <Col>
+                <Button inline onClick={() => openGraphPage(issue.id, settings)}>
+                  Open graph in full-screen page...
+                </Button>
+              </Col>
+            </Row>
           </Grid>
         </div>
       )}
@@ -90,6 +81,7 @@ const AppComponent: React.FunctionComponent = () => {
           followDownstream={followDownstream}
           setFollowUpstream={setFollowUpstream}
           setFollowDownstream={setFollowDownstream}
+          isSinglePageApp={true}
         />
       )}
     </div>

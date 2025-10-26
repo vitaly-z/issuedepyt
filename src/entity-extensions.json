@@ -1,7 +1,7 @@
 {
   "entityTypeExtensions": [
     {
-      "entityType": "AppGlobalStorage",
+      "entityType": "User",
       "properties": {
         "issueId": {
           "type": "string",

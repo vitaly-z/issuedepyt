@@ -9,6 +9,7 @@ import Tooltip from "@jetbrains/ring-ui-built/components/tooltip/tooltip";
 import Theme from "@jetbrains/ring-ui-built/components/global/theme";
 import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import LoaderInline from "@jetbrains/ring-ui-built/components/loader-inline/loader-inline";
+import ExpandAllIcon from "@jetbrains/icons/expand-all";
 import InfoIcon from "@jetbrains/icons/info";
 import UpdateIcon from "@jetbrains/icons/update";
 import DownloadIcon from "@jetbrains/icons/download";
@@ -27,6 +28,7 @@ import FilterDropdownMenu, { createFilterState } from "./filter-dropdown-menu";
 import SearchDropdownMenu from "./search-dropdown-menu";
 import type { FilterState } from "../../../@types/filter-state";
 import VerticalSizeControl from "./vertical-size-control";
+import { openGraphPage } from "../issuedepyt-page/open-page";
 
 interface IssueDepsProps {
   issueId: string;
@@ -35,6 +37,7 @@ interface IssueDepsProps {
   followDownstream: boolean;
   setFollowUpstream: (value: boolean) => void;
   setFollowDownstream: (value: boolean) => void;
+  isSinglePageApp?: boolean;
 }
 
 const DEFAULT_MAX_DEPTH = 6;
@@ -121,6 +124,7 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
   followDownstream,
   setFollowUpstream,
   setFollowDownstream,
+  isSinglePageApp = false,
 }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [relations, setRelations] = useState<Relations>({
@@ -142,15 +146,6 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
   const [filterState, setFilterState] = useState<FilterState>({
     showOrphans: false,
     showWhenLinksUnknown: true,
-  });
-
-  const filterRelations = (
-    relations: Relations,
-    followUp: boolean,
-    followDown: boolean
-  ): Relations => ({
-    upstream: followUp ? relations.upstream : [],
-    downstream: followDown ? relations.downstream : [],
   });
 
   const selectNode = (nodeId: string) => {
@@ -352,6 +347,11 @@ const IssueDeps: React.FunctionComponent<IssueDepsProps> = ({
               filterState={filterState}
               setFilterState={setFilterState}
             />
+            {isSinglePageApp && (
+              <Tooltip title="Open graph in full-screen page..." theme={Theme.LIGHT}>
+                <Button onClick={() => openGraphPage(issueId, settings)} icon={ExpandAllIcon} />
+              </Tooltip>
+            )}
             <OptionsDropdownMenu
               maxDepth={maxDepth}
               maxNodeWidth={maxNodeWidth}

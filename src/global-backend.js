@@ -8,8 +8,9 @@ exports.httpHandler = {
       scope: "global",
       permissions: ["READ_ISSUE", "READ_PROJECT"],
       handle: function handle(ctx) {
-        const issueId = ctx.globalStorage.extensionProperties.issueId;
-        const props = ctx.globalStorage.extensionProperties;
+        // Load stored context from user extension properties.
+        const props = ctx.currentUser.extensionProperties;
+        const issueId = props.issueId;
         const settings = {
           // Load project settings from stored context.
           typeField: props.typeField,
@@ -28,27 +29,6 @@ exports.httpHandler = {
           maxRecursionDepth: ctx.settings.maxRecursionDepth,
         }
         ctx.response.json({ issueId: issueId, settings: settings });
-      },
-    },
-    {
-      method: "POST",
-      path: "storeContext",
-      scope: "global",
-      handle: function handle(ctx) {
-        const body = JSON.parse(ctx.request.body);
-        const settings = body.settings;
-        ctx.globalStorage.extensionProperties.issueId = body.issueId;
-        ctx.globalStorage.extensionProperties.typeField = settings.typeField;
-        ctx.globalStorage.extensionProperties.stateField = settings.stateField;
-        ctx.globalStorage.extensionProperties.sprintsField = settings.sprintsField;
-        ctx.globalStorage.extensionProperties.assigneeField = settings.assigneeField;
-        ctx.globalStorage.extensionProperties.startDateField = settings.startDateField;
-        ctx.globalStorage.extensionProperties.dueDateField = settings.dueDateField;
-        ctx.globalStorage.extensionProperties.estimationField = settings.estimationField;
-        ctx.globalStorage.extensionProperties.extraCustomFields = settings.extraCustomFields;
-        ctx.globalStorage.extensionProperties.upstreamRelations = settings.upstreamRelations;
-        ctx.globalStorage.extensionProperties.downstreamRelations = settings.downstreamRelations;
-        ctx.response.json({ issueId: body.issueId });
       },
     },
   ],
