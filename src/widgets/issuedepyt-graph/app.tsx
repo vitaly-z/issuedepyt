@@ -5,7 +5,7 @@ import Toggle from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { Size as ToggleSize } from "@jetbrains/ring-ui-built/components/toggle/toggle";
 import { host } from "../global/ytApp";
 import type { Settings } from "../../../@types/settings";
-import IssueDeps from "./issue-deps";
+import IssueDeps from "../depgraph/issue-deps";
 import { openGraphPage } from "../issuedepyt-page/open-page";
 
 const issue = YTApp.entity;

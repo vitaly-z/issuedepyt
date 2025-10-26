@@ -12,8 +12,8 @@ import type {
   Relation,
   Relations,
   DirectionType,
-} from "../issuedepyt-graph/issue-types";
-import IssueDeps from "../issuedepyt-graph/issue-deps";
+} from "../depgraph/issue-types";
+import IssueDeps from "../depgraph/issue-deps";
 
 const AppComponent: React.FunctionComponent = () => {
   const [issueId, setIssueId] = useState<string | null>("SAN-3");
