@@ -8,7 +8,7 @@ import type {
   Relations,
   CustomField,
   IssuePeriod,
-} from "./issue-types";
+} from "./issue-types.ts";
 
 export type FollowDirection = "upstream" | "downstream";
 export type FollowDirections = Array<FollowDirection>;

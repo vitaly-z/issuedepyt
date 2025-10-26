@@ -17,12 +17,12 @@ import type {
   TimelineItemType,
   TimelineOptions,
 } from "vis-timeline";
-import type { IssueInfo, IssueLink } from "./issue-types";
+import type { IssueInfo, IssueLink } from "./issue-types.ts";
 import type { FieldInfo, FieldInfoField } from "../../../@types/field-info";
 import { FilterState } from "../../../@types/filter-state";
-import { filterIssues } from "./issue-helpers";
-import { calcBusinessDays, durationToDays, isPastDate } from "./time-utils";
-import { getIssueWork, getIssueStartEnd } from "./issue-helpers";
+import { filterIssues } from "./issue-helpers.ts";
+import { calcBusinessDays, durationToDays, isPastDate } from "./time-utils.ts";
+import { getIssueWork, getIssueStartEnd } from "./issue-helpers.ts";
 
 interface DepTimelineProps {
   issues: { [id: string]: IssueInfo };
