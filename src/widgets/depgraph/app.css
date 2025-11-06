@@ -1,6 +1,7 @@
 :root {
   --window-height: 1080px;
-  --graph-height: calc(var(--window-height) - 280px);
+  --estimated-window-overhead: 316px;
+  --graph-height: calc(var(--window-height) - var(--estimated-window-overhead));
 
   /* Constants. */
   --vis-timeline-tree-step: 12px;
